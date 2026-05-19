@@ -26,12 +26,13 @@ generic items, they must be specified in a datapack, structured as `data/your_na
 ├── pack.mcmeta                      
 ├── pack.png                         
 └── 📁 data/
-    └── 📁 your_namespace/             
+    └── 📁 piscosmetics/             
         └── 📁 cosmetic/                  
             ├── my_cool_hat.json
             ├── special_sword.json
             └── ...
 ```
+
 The contents of the JSON file determine the various properties of the NBT tagged item. All fields are optional
 and will fall back onto default values if left empty. Note that translational offsets for items are additive to
 defaults, but scaling values directly override their defaults.
@@ -68,14 +69,14 @@ particles can be modified.
 ```
 
 You also need to provide assets with which to override the generic item in a resourcepack. Ensure file names are consistent
-with examples, aside from the name of the datapack and the namespace.
+with examples.
 
 **Example:**
 
 ```
 📁 your_resourcepack/
     └── 📁 assets/
-    └── 📁 your_namespace/
+    └── 📁 piscosmetics/
     ├── 📁 geo/
     │   └── 📁 item/               
             └── my_cool_hat.geo.json
