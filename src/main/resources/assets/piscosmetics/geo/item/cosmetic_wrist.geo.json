@@ -1,0 +1,44 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.cosmetic_wrist",
+				"texture_width": 16,
+				"texture_height": 16,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 1.5,
+				"visible_bounds_offset": [0, 0.25, 0]
+			},
+			"textures": {
+				"texture": "piscosmetics:item/cosmetic_wrist"
+			},
+			"bones": [
+				{
+					"name": "armorLeftArm",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 180, 0]
+				},
+				{
+					"name": "bracelet",
+					"parent": "armorLeftArm",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{
+							"origin": [-2.5, 0, -2.5],
+							"size": [5, 1, 5],
+							"uv": {
+								"north": {"uv": [0, 10], "uv_size": [5, 1]},
+								"east": {"uv": [5, 0], "uv_size": [5, 1]},
+								"south": {"uv": [0, 12], "uv_size": [5, 1]},
+								"west": {"uv": [10, 0], "uv_size": [5, 1]},
+								"up": {"uv": [0, 0], "uv_size": [5, 5]},
+								"down": {"uv": [0, 10], "uv_size": [5, -5]}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

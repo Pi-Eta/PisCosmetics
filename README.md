@@ -1,25 +1,146 @@
 
-Installation information
+# Pi's Cosmetics Extension
+
+Framework
 =======
 
-This template repository can be directly cloned to get you started with a new
-mod. Simply create a new repository cloned from this one, by following the
-instructions provided by [GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
+This mod extends the [Accessories mod](https://github.com/wisp-forest/accessories?tab=readme-ov-file) and
+[Mega Showdown mod](https://github.com/yajatkaul/CobblemonMegaShowdown) so that items in all slots
+can be rendered physically on the player model. Rendering is done through a custom
+pipeline that uses [Geckolib](https://github.com/bernie-g/geckolib), allowing for animated attachments
+and features of textures like transparency and emission.
 
-Once you have your clone, simply open the repository in the IDE of your choice. The usual recommendation for an IDE is either IntelliJ IDEA or Eclipse.
+The mod only contains generic items which can be cloned and overidden in many aspects with datapack JSONs
+and an accompanying resourcepack.
+This allows users to add their own custom cosmetics that are worn in any slot provided by Accessories and
+Mega Showdown.
 
-If at any point you are missing libraries in your IDE, or you've run into problems you can
-run `gradlew --refresh-dependencies` to refresh the local cache. `gradlew clean` to reset everything 
-{this does not affect your code} and then start the process again.
-
-Mapping Names:
+Making new items:
 ============
-By default, the MDK is configured to use the official mapping names from Mojang for methods and fields 
-in the Minecraft codebase. These names are covered by a specific license. All modders should be aware of this
-license. For the latest license text, refer to the mapping file itself, or the reference copy here:
-https://github.com/NeoForged/NeoForm/blob/main/Mojang.md
 
-Additional Resources: 
-==========
-Community Documentation: https://docs.neoforged.net/  
-NeoForged Discord: https://discord.neoforged.net/
+New items are effectively copies of existing generic items with NBT data. To override the appearance of
+generic items, they must be specified in a datapack, structured as `data/your_namespace/cosmetics/newitem.json`.
+
+```
+📁 your_datapack/
+├── pack.mcmeta                      
+├── pack.png                         
+└── 📁 data/
+    └── 📁 your_namespace/             
+        └── 📁 cosmetic/                  
+            ├── my_cool_hat.json
+            ├── special_sword.json
+            └── ...
+```
+The contents of the JSON file determine the various properties of the NBT tagged item. All fields are optional
+and will fall back onto default values if left empty. Note that translational offsets for items are additive to
+defaults, but scaling values directly override their defaults.
+
+Each item can be applied with a particle effect that exists in the registry. This is limited to the default
+Minecraft particles, as well as particles added by other mods. The position and properties of attached simple
+particles can be modified.
+
+**Example:**
+
+```json
+{
+    "slot": "hat",
+    "model": "piscosmetics:geo/item/custom_model",
+    "texture": "piscosmetics:textures/item/custom_texture",
+    "animation": "piscosmetics:animation.custom_animation",
+    "name": "My Custom Hat",
+    "translate_x": 0.0,
+    "translate_y": 0.0,
+    "translate_z": 0.0,
+    "rotate_x": 0.0,
+    "rotate_y": 0.0,
+    "rotate_z": 0.0,
+    "scale": 1.0,
+    "particles": {
+        "type": "minecraft:flame",
+        "rate": 5,
+        "spread": 0.5,
+        "offset_x": 0.0,
+        "offset_y": 0.0,
+        "offset_z": 0.0
+    }
+}
+```
+
+You also need to provide assets with which to override the generic item in a resourcepack. Ensure file names are consistent
+with examples, aside from the name of the datapack and the namespace.
+
+**Example:**
+
+```
+📁 your_resourcepack/
+    └── 📁 assets/
+    └── 📁 your_namespace/
+    ├── 📁 geo/
+    │   └── 📁 item/               
+            └── my_cool_hat.geo.json
+    ├── 📁 textures/
+    │   └── 📁 item/                  
+            └── my_cool_hat.png
+    └── 📁 animations/
+    └── 📁 item/                   
+    └── my_cool_hat.animation.json
+```
+
+By default, the renderer handles transparent/translucent textures.
+
+For emissive textures, simply add another texture file suffixed with `_emissive.png`.
+The mod will automatically match that to an identically named texture and apply the glow
+based on the emissive file's transparency.
+
+
+### Models
+
+Models used must be in the `.geo.json` format. It is recommended that you model or convert 
+an existing model in Blockbench to a Bedrock Entity with per-face UVs. Ensure the format version is `1.12.0`.
+The name of the root bone in the model specifies the bone on the player model it will attach
+to, from the following list:
+
+- `armorHead`
+- `armorBody`
+- `armorleftArm`
+- `armorleftLeg`
+- `armorrightArm`
+- `armorrightLeg`
+
+It is generally good practice to have the origin of this bone be `[0, 0, 0]` for easy testing
+of the correct offset values.
+
+**Example:**
+
+```json
+{
+    "format_version": "1.12.0",
+    "minecraft:geometry": [
+        {
+            "description": {
+                "identifier": "geometry.test_cube",
+                "texture_width": 16,
+                "texture_height": 16
+            },
+            "bones": [
+                {
+                    "name": "leftArm",
+                    "pivot": [0, 0, 0],
+                    "cubes": [
+                        {
+                            "origin": [-8, -8, 0],
+                            "size": [16, 16, 1],
+                            "uv": [0, 0]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+Textures are generally 16x or 32x, but can be any size theoretically as per-face UVs support them.
+
+Animations are detected and applied in a similar manner as emissive textures.
