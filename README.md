@@ -46,9 +46,9 @@ particles can be modified.
 ```json
 {
     "slot": "hat",
-    "model": "piscosmetics:geo/item/custom_model",
-    "texture": "piscosmetics:textures/item/custom_texture",
-    "animation": "piscosmetics:animation.custom_animation",
+    "model": "your_namespace:geo/item/custom_model",
+    "texture": "your_namespace:textures/item/custom_texture",
+    "animation": "your_namespace:custom_animation",
     "name": "My Custom Hat",
     "translate_x": 0.0,
     "translate_y": 0.0,
@@ -68,8 +68,8 @@ particles can be modified.
 }
 ```
 
-You also need to provide assets with which to override the generic item in a resourcepack. Ensure file names are consistent
-with examples.
+You also need to provide assets with which to override the generic item in a resourcepack. These assets should be under a custom namespace within the resourcepack, and referenced accordingly in the JSON. Ensure file format and directory structure is consistent
+with examples. In the case of animations, only the name of the animation before `.animation.json` is required; folder and and suffix will be appended automatically.
 
 **Example:**
 
