@@ -86,8 +86,7 @@ with examples. Animations only require their name before the suffix `.animation.
         │       └── my_cool_hat.png
         │
         └── 📁 animations/
-            └── 📁 item/
-                └── my_cool_hat.animation.json
+            └── my_cool_hat.animation.json
 ```
 
 By default, the renderer handles transparent/translucent textures.
