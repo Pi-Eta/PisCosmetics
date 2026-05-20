@@ -69,7 +69,7 @@ particles can be modified.
 ```
 
 You also need to provide assets with which to override the generic item in a resourcepack. These assets should be under a custom namespace within the resourcepack, and referenced accordingly in the JSON. Ensure file format and directory structure is consistent
-with examples. In the case of animations, only the name of the animation before `.animation.json` is required; folder and and suffix will be appended automatically.
+with examples. Animations only require their name before the suffix `.animation.json`; folder and suffix will be appended automatically.
 
 **Example:**
 
