@@ -75,17 +75,19 @@ with examples. In the case of animations, only the name of the animation before 
 
 ```
 📁 your_resourcepack/
-    └── 📁 assets/
+└── 📁 assets/
     └── 📁 piscosmetics/
-    ├── 📁 geo/
-    │   └── 📁 item/               
-            └── my_cool_hat.geo.json
-    ├── 📁 textures/
-    │   └── 📁 item/                  
-            └── my_cool_hat.png
-    └── 📁 animations/
-    └── 📁 item/                   
-    └── my_cool_hat.animation.json
+        ├── 📁 geo/
+        │   └── 📁 item/
+        │       └── my_cool_hat.geo.json
+        │
+        ├── 📁 textures/
+        │   └── 📁 item/
+        │       └── my_cool_hat.png
+        │
+        └── 📁 animations/
+            └── 📁 item/
+                └── my_cool_hat.animation.json
 ```
 
 By default, the renderer handles transparent/translucent textures.
