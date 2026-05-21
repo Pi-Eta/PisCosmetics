@@ -19,7 +19,8 @@ public record CosmeticDefinition(
         Optional<Float> rotateY,
         Optional<Float> rotateZ,
         Optional<Float> scale,
-        Optional<ParticleSettings> particles
+        Optional<ParticleSettings> particles,
+        Optional<Boolean> elytra  // NEW FIELD
 ) {
     public static final Codec<CosmeticDefinition> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -35,9 +36,15 @@ public record CosmeticDefinition(
                     Codec.FLOAT.optionalFieldOf("rotate_y").forGetter(CosmeticDefinition::rotateY),
                     Codec.FLOAT.optionalFieldOf("rotate_z").forGetter(CosmeticDefinition::rotateZ),
                     Codec.FLOAT.optionalFieldOf("scale").forGetter(CosmeticDefinition::scale),
-                    ParticleSettings.CODEC.optionalFieldOf("particles").forGetter(CosmeticDefinition::particles)
+                    ParticleSettings.CODEC.optionalFieldOf("particles").forGetter(CosmeticDefinition::particles),
+                    Codec.BOOL.optionalFieldOf("elytra").forGetter(CosmeticDefinition::elytra)
             ).apply(instance, CosmeticDefinition::new)
     );
+
+    // Helper method
+    public boolean shouldDisableElytra() {
+        return elytra.orElse(false);
+    }
 
     public record ParticleSettings(
             ResourceLocation particleId,

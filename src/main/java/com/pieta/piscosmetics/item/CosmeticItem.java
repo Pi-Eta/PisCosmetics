@@ -1,6 +1,8 @@
 package com.pieta.piscosmetics.item;
 
 import com.pieta.piscosmetics.api.CosmeticDefinition;
+import com.pieta.piscosmetics.client.AnimationResolver;
+import com.pieta.piscosmetics.client.MovementState;
 import com.pieta.piscosmetics.client.renderer.CosmeticGeoRenderer;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -15,15 +17,30 @@ import software.bernie.geckolib.animatable.GeoItem;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.model.DefaultedItemGeoModel;
 import software.bernie.geckolib.util.GeckoLibUtil;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.util.function.Consumer;
 
 public class CosmeticItem extends Item implements GeoItem {
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
+    private String currentAnimation = "";
+
+    private final Map<String, RawAnimation> animationCache =
+            new HashMap<>();
+
+    private RawAnimation getAnimation(String name) {
+        return animationCache.computeIfAbsent(
+                name,
+                key -> RawAnimation.begin().thenLoop(key)
+        );
+    }
 
     public CosmeticItem(Properties properties) {
         super(properties);
@@ -154,13 +171,29 @@ public class CosmeticItem extends Item implements GeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+
         controllers.add(new AnimationController<>(
                 this,
-                "idle_controller",
-                0,
-                state -> state.setAndContinue(
-                        RawAnimation.begin().thenLoop("idle")
-                )
+                "movement_controller",
+                10,
+                state -> {
+
+                    var player = net.minecraft.client.Minecraft.getInstance().player;
+
+                    if (player == null) {
+                        return state.setAndContinue(
+                                RawAnimation.begin().thenLoop("idle")
+                        );
+                    }
+
+                    var ms = MovementState.get(player.getUUID());
+                    var result = AnimationResolver.resolve(ms, player);
+
+                    // BASE ANIMATION ONLY
+                    return state.setAndContinue(
+                            RawAnimation.begin().thenLoop(result.baseAnimation())
+                    );
+                }
         ));
     }
 
@@ -171,18 +204,15 @@ public class CosmeticItem extends Item implements GeoItem {
 
     @Override
     public net.minecraft.network.chat.Component getName(ItemStack stack) {
-
         String cosmeticId = stack
                 .getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
                 .copyTag()
                 .getString("cosmetic");
 
         if (!cosmeticId.isEmpty()) {
-
             ResourceLocation id = ResourceLocation.tryParse(cosmeticId);
 
             if (id != null) {
-
                 CosmeticDefinition def = CosmeticDataLoader.getDefinition(id);
 
                 if (def != null && def.name().isPresent()) {

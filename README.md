@@ -68,6 +68,8 @@ particles can be modified.
 }
 ```
 
+This custom item can be given to players with the `/give` command. For example, to give a hat you use `piscosmetics:cosmetic_hat[custom_data={cosmetic:"piscosmetics:test"}]` as the correct syntax. Test in this case is the name of the JSON in the datapack's `data/piscosmetic/cosmetic/` folder.
+
 You also need to provide assets with which to override the generic item in a resourcepack. These assets should be under a custom namespace within the resourcepack, and referenced accordingly in the JSON. Ensure file format and directory structure is consistent
 with examples. Animations only require their name before the suffix `.animation.json`; folder and suffix will be appended automatically.
 
@@ -146,3 +148,22 @@ of the correct offset values.
 Textures are generally 16x or 32x, but can be any size theoretically as per-face UVs support them.
 
 Animations are detected and applied in a similar manner as emissive textures.
+
+### Dynamic Animations
+
+With v1.1.0, the renderer has been reworked to add directional animation switches in accordance with the player model.
+The idea is to simulate the swaying of soft bodies when the direction of the wearing changes
+This is set up within the animation file itself, by creating animations named as follows:
+
+ - `idle`
+ - `walk_forward`
+ - `walk_backward`
+ - `walk_left`
+ - `walk_right`
+ - `jump`
+ - `fall`
+ - `glide`
+
+Because the glide animation plays when you are gliding with an elytra, I also added a new option for datapacks:
+`"elytra": true` can be used to make wearing that cosmetic disables the vanilla rendering of elytra. Combined with the `glide`
+animation tag, you can make custom wings that animate while you are gliding with your invisible elytra.

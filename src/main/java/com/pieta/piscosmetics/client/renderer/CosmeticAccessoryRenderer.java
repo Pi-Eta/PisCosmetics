@@ -1,5 +1,7 @@
 package com.pieta.piscosmetics.client.renderer;
 
+import com.pieta.piscosmetics.client.MovementState;
+import net.minecraft.world.entity.LivingEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
@@ -11,15 +13,12 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.core.particles.ParticleOptions;
 
 public class CosmeticAccessoryRenderer implements AccessoryRenderer {
 
@@ -92,9 +91,7 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
             float netHeadYaw,
             float headPitch
     ) {
-        if (!(entityModel instanceof HumanoidModel<?> humanoidModel)) {
-            return;
-        }
+        if (!(entityModel instanceof HumanoidModel<?> humanoidModel)) return;
 
         poseStack.pushPose();
 
@@ -102,53 +99,59 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
         SlotDefaults defaults = getDefaults(itemId);
         CosmeticDefinition def = getCosmeticDefinition(stack);
 
-        // Attach to correct body part
-        switch (itemId) {
-            case "cosmetic_hand", "cosmetic_ring", "cosmetic_wrist", "cosmetic_dynamax_band", "cosmetic_mega_bracelet", "cosmetic_z_ring" ->
-                    humanoidModel.leftArm.translateAndRotate(poseStack);
-            case "cosmetic_face", "cosmetic_hat" ->
-                    humanoidModel.head.translateAndRotate(poseStack);
+        LivingEntity entity = reference.entity();
+        MovementState.State state = MovementState.get(entity.getUUID());
 
-            case "cosmetic_anklet" ->
-                    humanoidModel.rightLeg.translateAndRotate(poseStack);
-            case "cosmetic_back", "cosmetic_belt", "cosmetic_cape", "cosmetic_charm", "cosmetic_necklace", "cosmetic_tera_orb" ->
-                    humanoidModel.body.translateAndRotate(poseStack);
-            default ->
-                    humanoidModel.body.translateAndRotate(poseStack);
+        // -------------------------
+        // GLIDE OVERRIDE (highest priority)
+        // -------------------------
+        if (state.gliding) {
+            humanoidModel.body.translateAndRotate(poseStack);
+            applyTransforms(poseStack, defaults, def);
+            Minecraft.getInstance().getItemRenderer().renderStatic(
+                    stack,
+                    ItemDisplayContext.NONE,
+                    packedLight,
+                    OverlayTexture.NO_OVERLAY,
+                    poseStack,
+                    bufferSource,
+                    entity.level(),
+                    0
+            );
+            poseStack.popPose();
+            return;
+        }
+
+        // -------------------------
+        // ATTACHMENT POINTS
+        // -------------------------
+        switch (itemId) {
+            case "cosmetic_hand", "cosmetic_ring", "cosmetic_wrist",
+                 "cosmetic_dynamax_band", "cosmetic_mega_bracelet", "cosmetic_z_ring"
+                    -> humanoidModel.leftArm.translateAndRotate(poseStack);
+
+            case "cosmetic_face", "cosmetic_hat"
+                    -> humanoidModel.head.translateAndRotate(poseStack);
+
+            case "cosmetic_anklet"
+                    -> humanoidModel.rightLeg.translateAndRotate(poseStack);
+
+            default
+                    -> humanoidModel.body.translateAndRotate(poseStack);
         }
 
         applyTransforms(poseStack, defaults, def);
         Minecraft.getInstance().getItemRenderer().renderStatic(
-                reference.entity(), stack, ItemDisplayContext.NONE, false,
-                poseStack, bufferSource, reference.entity().level(),
-                packedLight, OverlayTexture.NO_OVERLAY, 0
+                stack,
+                ItemDisplayContext.NONE,
+                packedLight,
+                OverlayTexture.NO_OVERLAY,
+                poseStack,
+                bufferSource,
+                entity.level(),
+                0
         );
-        poseStack.popPose();
-    }
 
-    private void renderPaired(ItemStack stack, SlotReference reference, PoseStack poseStack,
-                              ModelPart left, ModelPart right, MultiBufferSource bufferSource,
-                              int packedLight, SlotDefaults defaults, CosmeticDefinition def) {
-        // Left
-        poseStack.pushPose();
-        left.translateAndRotate(poseStack);
-        applyTransforms(poseStack, defaults, def);
-        Minecraft.getInstance().getItemRenderer().renderStatic(
-                reference.entity(), stack, ItemDisplayContext.NONE, false,
-                poseStack, bufferSource, reference.entity().level(),
-                packedLight, OverlayTexture.NO_OVERLAY, 0
-        );
-        poseStack.popPose();
-
-        // Right
-        poseStack.pushPose();
-        right.translateAndRotate(poseStack);
-        applyTransforms(poseStack, defaults, def);
-        Minecraft.getInstance().getItemRenderer().renderStatic(
-                reference.entity(), stack, ItemDisplayContext.NONE, false,
-                poseStack, bufferSource, reference.entity().level(),
-                packedLight, OverlayTexture.NO_OVERLAY, 0
-        );
         poseStack.popPose();
     }
 

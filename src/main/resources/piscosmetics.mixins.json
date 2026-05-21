@@ -1,0 +1,13 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "com.pieta.piscosmetics.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "refmap": "piscosmetics.refmap.json",
+    "client": [
+        "ElytraLayerMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

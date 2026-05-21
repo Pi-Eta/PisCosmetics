@@ -1,20 +1,20 @@
 package com.pieta.piscosmetics.network;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+
 import com.pieta.piscosmetics.PisCosmetics;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
+import com.pieta.piscosmetics.api.CosmeticDefinition.ParticleSettings;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import com.pieta.piscosmetics.api.CosmeticDefinition.ParticleSettings;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> definitions) implements CustomPacketPayload {
 
@@ -31,30 +31,36 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
     }
 
     private static void encode(RegistryFriendlyByteBuf buf, CosmeticSyncPacket packet) {
-        buf.writeInt(packet.definitions.size());
-        for (var entry : packet.definitions.entrySet()) {
+        buf.writeInt(packet.definitions().size());
+        for (var entry : packet.definitions().entrySet()) {
             buf.writeResourceLocation(entry.getKey());
-            // Use codec to write each definition
-            buf.writeUtf(entry.getValue().slot());
-            entry.getValue().model().ifPresentOrElse(
-                    loc -> { buf.writeBoolean(true); buf.writeResourceLocation(loc); },
-                    () -> buf.writeBoolean(false)
-            );
-            entry.getValue().texture().ifPresentOrElse(
-                    loc -> { buf.writeBoolean(true); buf.writeResourceLocation(loc); },
-                    () -> buf.writeBoolean(false)
-            );
-            buf.writeUtf(entry.getValue().animation().orElse(""));
-            buf.writeUtf(entry.getValue().name().orElse(""));
-            buf.writeFloat(entry.getValue().translateX().orElse(0f));
-            buf.writeFloat(entry.getValue().translateY().orElse(0f));
-            buf.writeFloat(entry.getValue().translateZ().orElse(0f));
-            buf.writeFloat(entry.getValue().rotateX().orElse(0f));
-            buf.writeFloat(entry.getValue().rotateY().orElse(0f));
-            buf.writeFloat(entry.getValue().rotateZ().orElse(0f));
-            buf.writeFloat(entry.getValue().scale().orElse(1f));
+            CosmeticDefinition def = entry.getValue();
 
-            var particles = entry.getValue().particles();
+            buf.writeUtf(def.slot());
+
+            def.model().ifPresentOrElse(
+                    loc -> { buf.writeBoolean(true); buf.writeResourceLocation(loc); },
+                    () -> buf.writeBoolean(false)
+            );
+
+            def.texture().ifPresentOrElse(
+                    loc -> { buf.writeBoolean(true); buf.writeResourceLocation(loc); },
+                    () -> buf.writeBoolean(false)
+            );
+
+            buf.writeUtf(def.animation().orElse(""));
+            buf.writeUtf(def.name().orElse(""));
+            buf.writeBoolean(def.elytra().orElse(false));  // elytra AFTER name
+
+            buf.writeFloat(def.translateX().orElse(0f));
+            buf.writeFloat(def.translateY().orElse(0f));
+            buf.writeFloat(def.translateZ().orElse(0f));
+            buf.writeFloat(def.rotateX().orElse(0f));
+            buf.writeFloat(def.rotateY().orElse(0f));
+            buf.writeFloat(def.rotateZ().orElse(0f));
+            buf.writeFloat(def.scale().orElse(1f));
+
+            var particles = def.particles();
             buf.writeBoolean(particles.isPresent());
             if (particles.isPresent()) {
                 var p = particles.get();
@@ -71,15 +77,29 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
     private static CosmeticSyncPacket decode(RegistryFriendlyByteBuf buf) {
         Map<ResourceLocation, CosmeticDefinition> defs = new HashMap<>();
         int size = buf.readInt();
+
         for (int i = 0; i < size; i++) {
             ResourceLocation id = buf.readResourceLocation();
+
             String slot = buf.readUtf();
-            Optional<ResourceLocation> model = buf.readBoolean() ?
-                    Optional.of(buf.readResourceLocation()) : Optional.empty();
-            Optional<ResourceLocation> texture = buf.readBoolean() ?
-                    Optional.of(buf.readResourceLocation()) : Optional.empty();
+
+            Optional<ResourceLocation> model = buf.readBoolean()
+                    ? Optional.of(buf.readResourceLocation())
+                    : Optional.empty();
+
+            Optional<ResourceLocation> texture = buf.readBoolean()
+                    ? Optional.of(buf.readResourceLocation())
+                    : Optional.empty();
+
             String anim = buf.readUtf();
-            String name = buf.readUtf();
+            Optional<String> animation = anim.isEmpty() ? Optional.empty() : Optional.of(anim);
+
+            String nameStr = buf.readUtf();
+            Optional<String> name = nameStr.isEmpty() ? Optional.empty() : Optional.of(nameStr);
+
+            boolean elytraRaw = buf.readBoolean();
+            Optional<Boolean> elytra = Optional.of(elytraRaw);
+
             float tx = buf.readFloat();
             float ty = buf.readFloat();
             float tz = buf.readFloat();
@@ -88,27 +108,47 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
             float rz = buf.readFloat();
             float scale = buf.readFloat();
 
+            Optional<Float> translateX = tx == 0 ? Optional.empty() : Optional.of(tx);
+            Optional<Float> translateY = ty == 0 ? Optional.empty() : Optional.of(ty);
+            Optional<Float> translateZ = tz == 0 ? Optional.empty() : Optional.of(tz);
+            Optional<Float> rotateX = rx == 0 ? Optional.empty() : Optional.of(rx);
+            Optional<Float> rotateY = ry == 0 ? Optional.empty() : Optional.of(ry);
+            Optional<Float> rotateZ = rz == 0 ? Optional.empty() : Optional.of(rz);
+            Optional<Float> scaleOpt = scale == 1f ? Optional.empty() : Optional.of(scale);
+
+            Optional<ParticleSettings> particles = Optional.empty();
+            if (buf.readBoolean()) {
+                ResourceLocation particleId = buf.readResourceLocation();
+                int rate = buf.readInt();
+                double spread = buf.readDouble();
+                float ox = buf.readFloat();
+                float oy = buf.readFloat();
+                float oz = buf.readFloat();
+                particles = Optional.of(new ParticleSettings(
+                        particleId,
+                        rate,
+                        spread,
+                        ox == 0 ? Optional.empty() : Optional.of(ox),
+                        oy == 0 ? Optional.empty() : Optional.of(oy),
+                        oz == 0 ? Optional.empty() : Optional.of(oz)
+                ));
+            }
+
             defs.put(id, new CosmeticDefinition(
                     slot,
                     model,
                     texture,
-                    anim.isEmpty() ? Optional.empty() : Optional.of(anim),
-                    name.isEmpty() ? Optional.empty() : Optional.of(name),
-                    tx == 0 ? Optional.empty() : Optional.of(tx),
-                    ty == 0 ? Optional.empty() : Optional.of(ty),
-                    tz == 0 ? Optional.empty() : Optional.of(tz),
-                    rx == 0 ? Optional.empty() : Optional.of(rx),
-                    ry == 0 ? Optional.empty() : Optional.of(ry),
-                    rz == 0 ? Optional.empty() : Optional.of(rz),
-                    scale == 1 ? Optional.empty() : Optional.of(scale),
-                    buf.readBoolean() ? Optional.of(new ParticleSettings(
-                            buf.readResourceLocation(),
-                            buf.readInt(),
-                            buf.readDouble(),
-                            Optional.of(buf.readFloat()).filter(f -> f != 0),
-                            Optional.of(buf.readFloat()).filter(f -> f != 0),
-                            Optional.of(buf.readFloat()).filter(f -> f != 0)
-                    )) : Optional.empty()
+                    animation,
+                    name,
+                    translateX,
+                    translateY,
+                    translateZ,
+                    rotateX,
+                    rotateY,
+                    rotateZ,
+                    scaleOpt,
+                    particles,
+                    elytra
             ));
         }
         return new CosmeticSyncPacket(defs);
@@ -117,7 +157,7 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
     public static void handle(CosmeticSyncPacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             CosmeticDataLoader.DEFINITIONS.clear();
-            CosmeticDataLoader.DEFINITIONS.putAll(packet.definitions);
+            CosmeticDataLoader.DEFINITIONS.putAll(packet.definitions());
         });
     }
 

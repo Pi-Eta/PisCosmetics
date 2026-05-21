@@ -12,11 +12,6 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import com.pieta.piscosmetics.client.CosmeticParticleHandler;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.particles.ParticleTypes;
-
 @Mod(PisCosmetics.MODID)
 public class PisCosmetics {
     public static final String MODID = "piscosmetics";
