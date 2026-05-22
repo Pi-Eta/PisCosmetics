@@ -11,16 +11,12 @@ public class AnimationResolver {
 
     public static Result resolve(MovementState.State state, Player player) {
 
-        // -------------------------
-        // GLIDE (highest priority)
-        // -------------------------
+        // GLIDE
         if (state.gliding || player.isFallFlying()) {
             return new Result("glide", "");
         }
 
-        // -------------------------
         // BASE MOVEMENT
-        // -------------------------
         String base;
 
         float f = state.forward;
@@ -34,9 +30,7 @@ public class AnimationResolver {
             base = s > 0 ? "walk_left" : "walk_right";
         }
 
-        // -------------------------
         // AIR OVERLAY
-        // -------------------------
         String overlay = "";
 
         if (!state.grounded && !state.gliding) {
