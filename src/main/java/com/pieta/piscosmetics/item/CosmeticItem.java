@@ -27,18 +27,6 @@ public class CosmeticItem extends Item implements GeoItem {
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    private String currentAnimation = "";
-
-    private final Map<String, RawAnimation> animationCache =
-            new HashMap<>();
-
-    private RawAnimation getAnimation(String name) {
-        return animationCache.computeIfAbsent(
-                name,
-                key -> RawAnimation.begin().thenLoop(key)
-        );
-    }
-
     public CosmeticItem(Properties properties) {
         super(properties);
     }
