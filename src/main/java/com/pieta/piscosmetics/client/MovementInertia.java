@@ -8,7 +8,7 @@ public class MovementInertia {
     private static float smoothedStrafe = 0f;
     private static float smoothedForward = 0f;
 
-    // tweak this (lower = more floaty, higher = more responsive)
+    // lower = more floaty, higher = more responsive
     private static final float SMOOTHING = 0.25f;
 
     public static void tick() {

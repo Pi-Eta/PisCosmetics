@@ -2,5 +2,14 @@
   "slot": "hat",
   "name": "Reactive Test Hat",
   "animation": "piscosmetics:spin",
-  "elytra": true
+  "elytra": true,
+  "particles": {
+    "type": "minecraft:entity_effect",
+    "rate": 20,
+    "spread": 1.0,
+    "offset_x": 0,
+    "offset_y": 1.2,
+    "offset_z": 0,
+    "color": "#FF5500"
+  }
 }

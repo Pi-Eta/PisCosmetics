@@ -50,7 +50,8 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
 
             buf.writeUtf(def.animation().orElse(""));
             buf.writeUtf(def.name().orElse(""));
-            buf.writeBoolean(def.elytra().orElse(false));  // elytra AFTER name
+            buf.writeUtf(def.attach().orElse(""));  // NEW: write attach field
+            buf.writeBoolean(def.elytra().orElse(false));
 
             buf.writeFloat(def.translateX().orElse(0f));
             buf.writeFloat(def.translateY().orElse(0f));
@@ -70,6 +71,7 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
                 buf.writeFloat(p.offsetX().orElse(0f));
                 buf.writeFloat(p.offsetY().orElse(0f));
                 buf.writeFloat(p.offsetZ().orElse(0f));
+                buf.writeUtf(p.color().orElse(""));  // NEW: write color
             }
         }
     }
@@ -96,6 +98,9 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
 
             String nameStr = buf.readUtf();
             Optional<String> name = nameStr.isEmpty() ? Optional.empty() : Optional.of(nameStr);
+
+            String attachStr = buf.readUtf();
+            Optional<String> attach = attachStr.isEmpty() ? Optional.empty() : Optional.of(attachStr);
 
             boolean elytraRaw = buf.readBoolean();
             Optional<Boolean> elytra = Optional.of(elytraRaw);
@@ -124,31 +129,35 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
                 float ox = buf.readFloat();
                 float oy = buf.readFloat();
                 float oz = buf.readFloat();
+                String colorStr = buf.readUtf();  // NEW: read color
+                Optional<String> color = colorStr.isEmpty() ? Optional.empty() : Optional.of(colorStr);
                 particles = Optional.of(new ParticleSettings(
                         particleId,
                         rate,
                         spread,
                         ox == 0 ? Optional.empty() : Optional.of(ox),
                         oy == 0 ? Optional.empty() : Optional.of(oy),
-                        oz == 0 ? Optional.empty() : Optional.of(oz)
+                        oz == 0 ? Optional.empty() : Optional.of(oz),
+                        color  // NEW: pass color
                 ));
             }
 
             defs.put(id, new CosmeticDefinition(
-                    slot,
-                    model,
-                    texture,
-                    animation,
-                    name,
-                    translateX,
-                    translateY,
-                    translateZ,
-                    rotateX,
-                    rotateY,
-                    rotateZ,
-                    scaleOpt,
-                    particles,
-                    elytra
+                    slot,           // 1
+                    model,          // 2
+                    texture,        // 3
+                    animation,      // 4
+                    name,           // 5
+                    attach,         // 6
+                    translateX,     // 7
+                    translateY,     // 8
+                    translateZ,     // 9
+                    rotateX,        // 10
+                    rotateY,        // 11
+                    rotateZ,        // 12
+                    scaleOpt,       // 13
+                    particles,      // 14
+                    elytra          // 15
             ));
         }
         return new CosmeticSyncPacket(defs);

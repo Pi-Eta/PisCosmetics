@@ -102,9 +102,6 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
         LivingEntity entity = reference.entity();
         MovementState.State state = MovementState.get(entity.getUUID());
 
-        // -------------------------
-        // GLIDE OVERRIDE (highest priority)
-        // -------------------------
         if (state.gliding) {
             humanoidModel.body.translateAndRotate(poseStack);
             applyTransforms(poseStack, defaults, def);
@@ -122,23 +119,11 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
             return;
         }
 
-        // -------------------------
-        // ATTACHMENT POINTS
-        // -------------------------
-        switch (itemId) {
-            case "cosmetic_hand", "cosmetic_ring", "cosmetic_wrist",
-                 "cosmetic_dynamax_band", "cosmetic_mega_bracelet", "cosmetic_z_ring"
-                    -> humanoidModel.leftArm.translateAndRotate(poseStack);
+        String attachPoint = (def != null && def.attach().isPresent())
+                ? def.attach().get()
+                : getDefaultAttachPoint(itemId);
 
-            case "cosmetic_face", "cosmetic_hat"
-                    -> humanoidModel.head.translateAndRotate(poseStack);
-
-            case "cosmetic_anklet"
-                    -> humanoidModel.rightLeg.translateAndRotate(poseStack);
-
-            default
-                    -> humanoidModel.body.translateAndRotate(poseStack);
-        }
+        attachToBodyPart(poseStack, humanoidModel, attachPoint);
 
         applyTransforms(poseStack, defaults, def);
         Minecraft.getInstance().getItemRenderer().renderStatic(
@@ -153,6 +138,28 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
         );
 
         poseStack.popPose();
+    }
+
+    private String getDefaultAttachPoint(String itemId) {
+        return switch (itemId) {
+            case "cosmetic_hand", "cosmetic_ring", "cosmetic_wrist",
+                 "cosmetic_dynamax_band", "cosmetic_mega_bracelet", "cosmetic_z_ring" -> "left_arm";
+            case "cosmetic_face", "cosmetic_hat" -> "head";
+            case "cosmetic_anklet" -> "right_leg";
+            default -> "body";
+        };
+    }
+
+    private void attachToBodyPart(PoseStack poseStack, HumanoidModel<?> model, String attachPoint) {
+        switch (attachPoint.toLowerCase()) {
+            case "head" -> model.head.translateAndRotate(poseStack);
+            case "body", "chest" -> model.body.translateAndRotate(poseStack);
+            case "left_arm" -> model.leftArm.translateAndRotate(poseStack);
+            case "right_arm" -> model.rightArm.translateAndRotate(poseStack);
+            case "left_leg" -> model.leftLeg.translateAndRotate(poseStack);
+            case "right_leg" -> model.rightLeg.translateAndRotate(poseStack);
+            default -> model.body.translateAndRotate(poseStack);
+        }
     }
 
     private void applyTransforms(PoseStack poseStack, SlotDefaults defaults, CosmeticDefinition def) {

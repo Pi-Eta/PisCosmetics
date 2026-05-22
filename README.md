@@ -38,7 +38,7 @@ and will fall back onto default values if left empty. Note that translational of
 defaults, but scaling values directly override their defaults.
 
 Each item can be applied with a particle effect that exists in the registry. This is limited to the default
-Minecraft particles, as well as particles added by other mods. The position and properties of attached simple
+Minecraft particles, `minecraft:enetity_effect`, as well as particles added by other mods. The position and properties of attached simple
 particles can be modified.
 
 **Example:**
@@ -49,6 +49,7 @@ particles can be modified.
     "model": "your_namespace:geo/item/custom_model",
     "texture": "your_namespace:textures/item/custom_texture",
     "animation": "your_namespace:custom_animation",
+    "attach": "head",
     "name": "My Custom Hat",
     "translate_x": 0.0,
     "translate_y": 0.0,
@@ -63,7 +64,8 @@ particles can be modified.
         "spread": 0.5,
         "offset_x": 0.0,
         "offset_y": 0.0,
-        "offset_z": 0.0
+        "offset_z": 0.0,
+        "color": "#FF5500"
     }
 }
 ```
@@ -102,15 +104,14 @@ based on the emissive file's transparency.
 
 Models used must be in the `.geo.json` format. It is recommended that you model or convert 
 an existing model in Blockbench to a Bedrock Entity with per-face UVs. Ensure the format version is `1.12.0`.
-The name of the root bone in the model specifies the bone on the player model it will attach
-to, from the following list:
+You can set each item to attach to specific limbs regardless of slot by setting the `attach` property to one of the following:
 
-- `armorHead`
-- `armorBody`
-- `armorleftArm`
-- `armorleftLeg`
-- `armorrightArm`
-- `armorrightLeg`
+- `head`
+- `body` or `chest`
+- `leftArm`
+- `leftLeg`
+- `rightArm`
+- `rightLeg`
 
 It is generally good practice to have the origin of this bone be `[0, 0, 0]` for easy testing
 of the correct offset values.
@@ -129,7 +130,7 @@ of the correct offset values.
             },
             "bones": [
                 {
-                    "name": "leftArm",
+                    "name": "bone",
                     "pivot": [0, 0, 0],
                     "cubes": [
                         {
@@ -167,3 +168,10 @@ This is set up within the animation file itself, by creating animations named as
 Because the glide animation plays when you are gliding with an elytra, I also added a new option for datapacks:
 `"elytra": true` can be used to make wearing that cosmetic disables the vanilla rendering of elytra. Combined with the `glide`
 animation tag, you can make custom wings that animate while you are gliding with your invisible elytra.
+
+### Coloured Particles
+
+v1.1.1 has added custom colours for particles, added via the property `"color": "#FF5500"` within `particle{}`.
+Note that the `"color":` field only works for `minecraft:entity_effect` (for now).
+
+Also, you will never take my British spelling away from me.
