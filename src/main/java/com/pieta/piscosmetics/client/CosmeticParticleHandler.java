@@ -20,7 +20,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
-public class CosmeticParticleHandler_d {
+public class CosmeticParticleHandler {
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
