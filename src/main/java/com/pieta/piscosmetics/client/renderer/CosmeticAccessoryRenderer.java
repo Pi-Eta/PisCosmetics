@@ -163,24 +163,23 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
     }
 
     private void applyTransforms(PoseStack poseStack, SlotDefaults defaults, CosmeticDefinition def) {
-        // Apply default transforms
+        // Apply defaults FIRST (as-is, no negation)
         poseStack.translate(defaults.transX, defaults.transY, defaults.transZ);
         poseStack.mulPose(Axis.XP.rotationDegrees(defaults.rotX));
         poseStack.mulPose(Axis.YP.rotationDegrees(defaults.rotY));
         poseStack.mulPose(Axis.ZP.rotationDegrees(defaults.rotZ));
         poseStack.scale(defaults.scale, defaults.scale, defaults.scale);
 
-        // Datapack overrides
         if (def != null) {
             poseStack.translate(
                     def.translateX().orElse(0f),
-                    -def.translateY().orElse(0f),
-                    -def.translateZ().orElse(0f)
+                    def.translateY().orElse(0f),   // Flip Y (user's positive = up)
+                    def.translateZ().orElse(0f)    // Flip Z (user's positive = forward)
             );
             poseStack.mulPose(Axis.XP.rotationDegrees(def.rotateX().orElse(0f)));
-            poseStack.mulPose(Axis.YP.rotationDegrees(-def.rotateY().orElse(0f)));
-            poseStack.mulPose(Axis.ZP.rotationDegrees(-def.rotateZ().orElse(0f)));
-            def.scale().ifPresent(s -> poseStack.scale(s, s, s));
+            poseStack.mulPose(Axis.YP.rotationDegrees(def.rotateY().orElse(0f)));  // Flip Y rotation
+            poseStack.mulPose(Axis.ZP.rotationDegrees(def.rotateZ().orElse(0f)));  // Flip Z rotation
+            def.scale().ifPresent(s -> poseStack.scale(s, s, s));  // Override scale
         }
     }
 }
