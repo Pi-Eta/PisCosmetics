@@ -153,6 +153,8 @@ public class CosmeticItem extends Item implements GeoItem {
                                         BuiltInRegistries.ITEM.getKey(animatable).getPath() +
                                         ".animation.json"
                         );
+
+
                     }
                 }
         );

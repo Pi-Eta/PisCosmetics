@@ -50,8 +50,12 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
 
             buf.writeUtf(def.animation().orElse(""));
             buf.writeUtf(def.name().orElse(""));
-            buf.writeUtf(def.attach().orElse(""));  // NEW: write attach field
+            buf.writeUtf(def.attach().orElse(""));
             buf.writeBoolean(def.elytra().orElse(false));
+            buf.writeBoolean(def.icon().isPresent());
+            if (def.icon().isPresent()) {
+                buf.writeResourceLocation(def.icon().get());
+            }
 
             buf.writeFloat(def.translateX().orElse(0f));
             buf.writeFloat(def.translateY().orElse(0f));
@@ -104,6 +108,9 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
 
             boolean elytraRaw = buf.readBoolean();
             Optional<Boolean> elytra = Optional.of(elytraRaw);
+            Optional<ResourceLocation> icon = buf.readBoolean()
+                    ? Optional.of(buf.readResourceLocation())
+                    : Optional.empty();
 
             float tx = buf.readFloat();
             float ty = buf.readFloat();
@@ -157,7 +164,8 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
                     rotateZ,        // 12
                     scaleOpt,       // 13
                     particles,      // 14
-                    elytra          // 15
+                    elytra,         // 15
+                    icon            // 16
             ));
         }
         return new CosmeticSyncPacket(defs);
