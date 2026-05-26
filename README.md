@@ -175,3 +175,9 @@ v1.1.1 has added custom colours for particles, added via the property `"color": 
 Note that the `"color":` field only works for `minecraft:entity_effect` (for now).
 
 Also, you will never take my British spelling away from me.
+
+### Icons
+
+Each added cosmetic can now have custom 2d sprites, which apply to the gui and when thrown onto the ground. This is done with the
+`"icon": namespace:item/sprite`. This leads to the `assets/namespace/textures/item/sprite.png`, so ensure your files are
+in the correct space
