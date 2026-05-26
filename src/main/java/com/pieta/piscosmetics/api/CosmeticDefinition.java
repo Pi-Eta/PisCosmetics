@@ -21,7 +21,8 @@ public record CosmeticDefinition(
         Optional<Float> rotateZ,
         Optional<Float> scale,
         Optional<ParticleSettings> particles,
-        Optional<Boolean> elytra
+        Optional<Boolean> elytra,
+        Optional<ResourceLocation> icon
 ) {
     public static final Codec<CosmeticDefinition> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -39,7 +40,8 @@ public record CosmeticDefinition(
                     Codec.FLOAT.optionalFieldOf("rotate_z").forGetter(CosmeticDefinition::rotateZ),
                     Codec.FLOAT.optionalFieldOf("scale").forGetter(CosmeticDefinition::scale),
                     ParticleSettings.CODEC.optionalFieldOf("particles").forGetter(CosmeticDefinition::particles),
-                    Codec.BOOL.optionalFieldOf("elytra").forGetter(CosmeticDefinition::elytra)
+                    Codec.BOOL.optionalFieldOf("elytra").forGetter(CosmeticDefinition::elytra),
+                    ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(CosmeticDefinition::icon)
             ).apply(instance, CosmeticDefinition::new)
     );
 
