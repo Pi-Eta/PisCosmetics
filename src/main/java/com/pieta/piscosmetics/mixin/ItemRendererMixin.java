@@ -44,7 +44,7 @@ public class ItemRendererMixin {
             BakedModel model,
             CallbackInfo ci
     ) {
-        // Only intercept GUI and GROUND rendering
+        // intercept GUI and GROUND rendering
         if (displayContext != ItemDisplayContext.GUI && displayContext != ItemDisplayContext.GROUND) {
             return;
         }
@@ -71,15 +71,13 @@ public class ItemRendererMixin {
                     iconLocation.getNamespace(),
                     ICON_PREFIX + iconLocation.getPath() + ICON_SUFFIX
             );
-
-            // Cancel the normal rendering
             ci.cancel();
 
             if (displayContext == ItemDisplayContext.GROUND) {
                 poseStack.translate(0, 0.3f, 0);
             }
 
-            // Render the texture directly
+            // render the texture directly
             renderIconTexture(poseStack, buffer, combinedLight, textureLocation);
 
         } catch (Exception e) {
@@ -94,32 +92,26 @@ public class ItemRendererMixin {
         float scale = 0.85f;
         poseStack.scale(scale, scale, 1);
 
-        // Center the scaled texture
         poseStack.translate(-0.5f, -0.5f, 0);
 
-        // Disable culling to render both sides
         RenderSystem.disableCull();
 
         VertexConsumer vertexConsumer = buffer.getBuffer(net.minecraft.client.renderer.RenderType.text(texture));
         var pose = poseStack.last().pose();
 
-        // Keep UV within 0-1 to avoid edge bleeding
         float uvMin = 0.01f;   // Slight inset to avoid edge pixels
         float uvMax = 0.99f;   // Slight inset to avoid edge pixels
 
-        // Front face (normal orientation)
         vertexConsumer.addVertex(pose, 0, 0, 0).setUv(uvMin, uvMin).setLight(light).setColor(255, 255, 255, 255);
         vertexConsumer.addVertex(pose, 1, 0, 0).setUv(uvMax, uvMin).setLight(light).setColor(255, 255, 255, 255);
         vertexConsumer.addVertex(pose, 1, 1, 0).setUv(uvMax, uvMax).setLight(light).setColor(255, 255, 255, 255);
         vertexConsumer.addVertex(pose, 0, 1, 0).setUv(uvMin, uvMax).setLight(light).setColor(255, 255, 255, 255);
 
-        // Back face (reverse order for opposite side)
         vertexConsumer.addVertex(pose, 0, 1, 0).setUv(uvMin, uvMax).setLight(light).setColor(255, 255, 255, 255);
         vertexConsumer.addVertex(pose, 1, 1, 0).setUv(uvMax, uvMax).setLight(light).setColor(255, 255, 255, 255);
         vertexConsumer.addVertex(pose, 1, 0, 0).setUv(uvMax, uvMin).setLight(light).setColor(255, 255, 255, 255);
         vertexConsumer.addVertex(pose, 0, 0, 0).setUv(uvMin, uvMin).setLight(light).setColor(255, 255, 255, 255);
 
-        // Re-enable culling
         RenderSystem.enableCull();
 
         poseStack.popPose();
