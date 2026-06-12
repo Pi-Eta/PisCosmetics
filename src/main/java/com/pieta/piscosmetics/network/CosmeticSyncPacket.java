@@ -1,12 +1,10 @@
 package com.pieta.piscosmetics.network;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import com.pieta.piscosmetics.PisCosmetics;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
-import com.pieta.piscosmetics.api.CosmeticDefinition.ParticleSettings;
+import com.pieta.piscosmetics.api.ParticleEmitter;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -51,10 +49,10 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
             buf.writeUtf(def.animation().orElse(""));
             buf.writeUtf(def.name().orElse(""));
             buf.writeUtf(def.attach().orElse(""));
-            buf.writeBoolean(def.elytra().orElse(false));
-            buf.writeBoolean(def.icon().isPresent());
-            if (def.icon().isPresent()) {
-                buf.writeResourceLocation(def.icon().get());
+            List<String> hideArmor = def.hideArmor();
+            buf.writeInt(hideArmor.size());
+            for (String s : hideArmor) {
+                buf.writeUtf(s);
             }
 
             buf.writeFloat(def.translateX().orElse(0f));
@@ -65,18 +63,29 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
             buf.writeFloat(def.rotateZ().orElse(0f));
             buf.writeFloat(def.scale().orElse(1f));
 
-            var particles = def.particles();
-            buf.writeBoolean(particles.isPresent());
-            if (particles.isPresent()) {
-                var p = particles.get();
-                buf.writeResourceLocation(p.particleId());
-                buf.writeInt(p.rate());
-                buf.writeDouble(p.spread());
-                buf.writeFloat(p.offsetX().orElse(0f));
-                buf.writeFloat(p.offsetY().orElse(0f));
-                buf.writeFloat(p.offsetZ().orElse(0f));
-                buf.writeUtf(p.color().orElse(""));  // NEW: write color
+            var emitters = def.particleEmitters();
+            buf.writeInt(emitters.size());
+            for (ParticleEmitter emitter : emitters) {
+                buf.writeUtf(emitter.trigger());
+                buf.writeResourceLocation(emitter.particleId());
+                buf.writeInt(emitter.rate());
+                buf.writeDouble(emitter.spread());
+                buf.writeInt(emitter.count());
+                buf.writeBoolean(emitter.offsetX().isPresent());
+                emitter.offsetX().ifPresent(buf::writeDouble);
+                buf.writeBoolean(emitter.offsetY().isPresent());
+                emitter.offsetY().ifPresent(buf::writeDouble);
+                buf.writeBoolean(emitter.offsetZ().isPresent());
+                emitter.offsetZ().ifPresent(buf::writeDouble);
+                buf.writeUtf(emitter.color().orElse(""));
+                buf.writeBoolean(emitter.texture().isPresent());
+                emitter.texture().ifPresent(buf::writeResourceLocation);
+                buf.writeFloat(emitter.customSize().orElse(0.25f));
+                buf.writeInt(emitter.lifetime().orElse(30));
             }
+
+            buf.writeBoolean(def.icon().isPresent());
+            def.icon().ifPresent(buf::writeResourceLocation);
         }
     }
 
@@ -106,11 +115,11 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
             String attachStr = buf.readUtf();
             Optional<String> attach = attachStr.isEmpty() ? Optional.empty() : Optional.of(attachStr);
 
-            boolean elytraRaw = buf.readBoolean();
-            Optional<Boolean> elytra = Optional.of(elytraRaw);
-            Optional<ResourceLocation> icon = buf.readBoolean()
-                    ? Optional.of(buf.readResourceLocation())
-                    : Optional.empty();
+            int hideArmorCount = buf.readInt();
+            List<String> hideArmor = new ArrayList<>();
+            for (int h = 0; h < hideArmorCount; h++) {
+                hideArmor.add(buf.readUtf());
+            }
 
             float tx = buf.readFloat();
             float ty = buf.readFloat();
@@ -128,44 +137,55 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
             Optional<Float> rotateZ = rz == 0 ? Optional.empty() : Optional.of(rz);
             Optional<Float> scaleOpt = scale == 1f ? Optional.empty() : Optional.of(scale);
 
-            Optional<ParticleSettings> particles = Optional.empty();
-            if (buf.readBoolean()) {
+            int emitterCount = buf.readInt();
+            java.util.List<ParticleEmitter> emitters = new java.util.ArrayList<>();
+            for (int j = 0; j < emitterCount; j++) {
+                String trigger = buf.readUtf();
                 ResourceLocation particleId = buf.readResourceLocation();
                 int rate = buf.readInt();
                 double spread = buf.readDouble();
-                float ox = buf.readFloat();
-                float oy = buf.readFloat();
-                float oz = buf.readFloat();
-                String colorStr = buf.readUtf();  // NEW: read color
+                int count = buf.readInt();
+
+                Optional<Double> offsetX = buf.readBoolean() ? Optional.of(buf.readDouble()) : Optional.empty();
+                Optional<Double> offsetY = buf.readBoolean() ? Optional.of(buf.readDouble()) : Optional.empty();
+                Optional<Double> offsetZ = buf.readBoolean() ? Optional.of(buf.readDouble()) : Optional.empty();
+
+                String colorStr = buf.readUtf();
                 Optional<String> color = colorStr.isEmpty() ? Optional.empty() : Optional.of(colorStr);
-                particles = Optional.of(new ParticleSettings(
-                        particleId,
-                        rate,
-                        spread,
-                        ox == 0 ? Optional.empty() : Optional.of(ox),
-                        oy == 0 ? Optional.empty() : Optional.of(oy),
-                        oz == 0 ? Optional.empty() : Optional.of(oz),
-                        color  // NEW: pass color
+
+                Optional<ResourceLocation> textureOpt = buf.readBoolean() ? Optional.of(buf.readResourceLocation()) : Optional.empty();
+                float customSize = buf.readFloat();
+                Optional<Float> customSizeOpt = customSize == 0.25f ? Optional.empty() : Optional.of(customSize);
+                int lifetime = buf.readInt();
+                Optional<Integer> lifetimeOpt = lifetime == 30 ? Optional.empty() : Optional.of(lifetime);
+
+                emitters.add(new ParticleEmitter(
+                        trigger, particleId, rate, spread, count,
+                        offsetX, offsetY, offsetZ, color, textureOpt, customSizeOpt, lifetimeOpt
                 ));
             }
 
+            Optional<ResourceLocation> icon = buf.readBoolean()
+                    ? Optional.of(buf.readResourceLocation())
+                    : Optional.empty();
+
             defs.put(id, new CosmeticDefinition(
-                    slot,           // 1
-                    model,          // 2
-                    texture,        // 3
-                    animation,      // 4
-                    name,           // 5
-                    attach,         // 6
-                    translateX,     // 7
-                    translateY,     // 8
-                    translateZ,     // 9
-                    rotateX,        // 10
-                    rotateY,        // 11
-                    rotateZ,        // 12
-                    scaleOpt,       // 13
-                    particles,      // 14
-                    elytra,         // 15
-                    icon            // 16
+                    slot,
+                    model,
+                    texture,
+                    animation,
+                    name,
+                    attach,
+                    translateX,
+                    translateY,
+                    translateZ,
+                    rotateX,
+                    rotateY,
+                    rotateZ,
+                    scaleOpt,
+                    emitters,
+                    hideArmor,
+                    icon
             ));
         }
         return new CosmeticSyncPacket(defs);

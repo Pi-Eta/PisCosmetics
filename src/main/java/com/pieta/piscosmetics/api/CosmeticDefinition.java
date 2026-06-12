@@ -1,9 +1,11 @@
 package com.pieta.piscosmetics.api;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.List;
 import java.util.Optional;
 
 public record CosmeticDefinition(
@@ -20,8 +22,8 @@ public record CosmeticDefinition(
         Optional<Float> rotateY,
         Optional<Float> rotateZ,
         Optional<Float> scale,
-        Optional<ParticleSettings> particles,
-        Optional<Boolean> elytra,
+        List<ParticleEmitter> particleEmitters,
+        List<String> hideArmor,
         Optional<ResourceLocation> icon
 ) {
     public static final Codec<CosmeticDefinition> CODEC = RecordCodecBuilder.create(instance ->
@@ -31,7 +33,7 @@ public record CosmeticDefinition(
                     ResourceLocation.CODEC.optionalFieldOf("texture").forGetter(CosmeticDefinition::texture),
                     Codec.STRING.optionalFieldOf("animation").forGetter(CosmeticDefinition::animation),
                     Codec.STRING.optionalFieldOf("name").forGetter(CosmeticDefinition::name),
-                    Codec.STRING.optionalFieldOf("attach").forGetter(CosmeticDefinition::attach),  // NEW
+                    Codec.STRING.optionalFieldOf("attach").forGetter(CosmeticDefinition::attach),
                     Codec.FLOAT.optionalFieldOf("translate_x").forGetter(CosmeticDefinition::translateX),
                     Codec.FLOAT.optionalFieldOf("translate_y").forGetter(CosmeticDefinition::translateY),
                     Codec.FLOAT.optionalFieldOf("translate_z").forGetter(CosmeticDefinition::translateZ),
@@ -39,39 +41,17 @@ public record CosmeticDefinition(
                     Codec.FLOAT.optionalFieldOf("rotate_y").forGetter(CosmeticDefinition::rotateY),
                     Codec.FLOAT.optionalFieldOf("rotate_z").forGetter(CosmeticDefinition::rotateZ),
                     Codec.FLOAT.optionalFieldOf("scale").forGetter(CosmeticDefinition::scale),
-                    ParticleSettings.CODEC.optionalFieldOf("particles").forGetter(CosmeticDefinition::particles),
-                    Codec.BOOL.optionalFieldOf("elytra").forGetter(CosmeticDefinition::elytra),
+                    Codec.list(ParticleEmitter.CODEC).optionalFieldOf("particle_emitters", List.of()).forGetter(CosmeticDefinition::particleEmitters),
+                    Codec.either(Codec.STRING, Codec.STRING.listOf())
+                            .xmap(either -> either.map(List::of, list -> list),
+                                    list -> list.size() == 1 ? Either.left(list.get(0)) : Either.right(list))
+                            .optionalFieldOf("hide_armor", List.of())
+                            .forGetter(CosmeticDefinition::hideArmor),
                     ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(CosmeticDefinition::icon)
             ).apply(instance, CosmeticDefinition::new)
     );
 
     public String getAttachPoint() {
-        return attach.orElse("body");  // Default to body attach point if not specified
-    }
-
-    public boolean shouldDisableElytra() {
-        return elytra.orElse(false);
-    }
-
-    public record ParticleSettings(
-            ResourceLocation particleId,
-            int rate,
-            double spread,
-            Optional<Float> offsetX,
-            Optional<Float> offsetY,
-            Optional<Float> offsetZ,
-            Optional<String> color  // NEW - hex color like "#FF0000" for red
-    ) {
-        public static final Codec<ParticleSettings> CODEC = RecordCodecBuilder.create(instance ->
-                instance.group(
-                        ResourceLocation.CODEC.fieldOf("type").forGetter(ParticleSettings::particleId),
-                        Codec.INT.optionalFieldOf("rate", 10).forGetter(ParticleSettings::rate),
-                        Codec.DOUBLE.optionalFieldOf("spread", 0.5).forGetter(ParticleSettings::spread),
-                        Codec.FLOAT.optionalFieldOf("offset_x").forGetter(ParticleSettings::offsetX),
-                        Codec.FLOAT.optionalFieldOf("offset_y").forGetter(ParticleSettings::offsetY),
-                        Codec.FLOAT.optionalFieldOf("offset_z").forGetter(ParticleSettings::offsetZ),
-                        Codec.STRING.optionalFieldOf("color").forGetter(ParticleSettings::color)
-                ).apply(instance, ParticleSettings::new)
-        );
+        return attach.orElse("body");
     }
 }

@@ -2,14 +2,29 @@
   "slot": "hat",
   "name": "Reactive Test Hat",
   "animation": "piscosmetics:spin",
-  "elytra": true,
-  "particles": {
-    "type": "minecraft:entity_effect",
-    "rate": 20,
-    "spread": 1.0,
-    "offset_x": 0,
-    "offset_y": 1.2,
-    "offset_z": 0,
-    "color": "#FF5500"
-  }
+  "hide_armor": ["chest", "feet"],
+  "particle_emitters": [
+    {
+      "trigger": "sprinting",
+      "particle": "piscosmetics:cosmetic_particle",
+      "rate": 10,
+      "spread": 0.5,
+      "count": 1,
+      "offset_x": -0.5,
+      "offset_y": 1.5,
+      "custom_size": 0.25,
+      "texture": "piscosmetics:lettera"
+    },
+    {
+      "trigger": "jumping",
+      "particle": "piscosmetics:cosmetic_particle",
+      "rate": 10,
+      "spread": 0.5,
+      "count": 1,
+      "offset_x": 0.5,
+      "offset_y": 1.5,
+      "custom_size": 0.25,
+      "texture": "piscosmetics:letterb"
+    }
+  ]
 }

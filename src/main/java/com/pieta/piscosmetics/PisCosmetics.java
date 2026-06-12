@@ -1,25 +1,32 @@
 package com.pieta.piscosmetics;
 
+import com.pieta.piscosmetics.client.CosmeticParticle;
 import com.pieta.piscosmetics.client.renderer.CosmeticAccessoryRenderer;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
 import com.pieta.piscosmetics.network.CosmeticSyncPacket;
+import com.pieta.piscosmetics.network.ParticleSyncPacket;
 import io.wispforest.accessories.api.client.AccessoriesRendererRegistry;
 import net.neoforged.bus.api.IEventBus;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+
 @Mod(PisCosmetics.MODID)
 public class PisCosmetics {
     public static final String MODID = "piscosmetics";
 
     public PisCosmetics(IEventBus modEventBus) {
         ModItems.ITEMS.register(modEventBus);
+        ModParticles.PARTICLES.register(modEventBus);
         modEventBus.addListener(this::clientSetup);
+        modEventBus.addListener(this::registerParticleProviders);
         modEventBus.addListener(CosmeticSyncPacket::register);
+        modEventBus.addListener(ParticleSyncPacket::register);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLogin);
         NeoForge.EVENT_BUS.addListener(this::onAddReloadListener);
     }
@@ -33,6 +40,10 @@ public class PisCosmetics {
 
     private void onAddReloadListener(AddReloadListenerEvent event) {
         event.addListener(new CosmeticDataLoader());
+    }
+
+    private void registerParticleProviders(RegisterParticleProvidersEvent event) {
+        event.registerSpecial(ModParticles.COSMETIC_PARTICLE.get(), new CosmeticParticle.Provider());
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
@@ -101,6 +112,10 @@ public class PisCosmetics {
                     ModItems.COSMETIC_Z_RING.get(),
                     CosmeticAccessoryRenderer::new
             );
+            AccessoriesRendererRegistry.registerRenderer(ModItems.COSMETIC_HEAD.get(), CosmeticAccessoryRenderer::new);
+            AccessoriesRendererRegistry.registerRenderer(ModItems.COSMETIC_CHEST.get(), CosmeticAccessoryRenderer::new);
+            AccessoriesRendererRegistry.registerRenderer(ModItems.COSMETIC_LEGS.get(), CosmeticAccessoryRenderer::new);
+            AccessoriesRendererRegistry.registerRenderer(ModItems.COSMETIC_FEET.get(), CosmeticAccessoryRenderer::new);
         });
     }
 }

@@ -6,7 +6,9 @@
     "refmap": "piscosmetics.refmap.json",
     "client": [
         "ElytraLayerMixin",
-        "ItemRendererMixin"
+        "ItemRendererMixin",
+        "HumanoidArmorLayerMixin",
+        "CosmeticArmorRenderMixin"
     ],
     "injectors": {
         "defaultRequire": 1

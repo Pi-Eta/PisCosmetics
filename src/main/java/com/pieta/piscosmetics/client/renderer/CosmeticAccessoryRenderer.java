@@ -62,6 +62,14 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
                     new SlotDefaults(-3.0F/16F, 5.0F/16F, -3.0F/16F, 180.0F, 180.0F, 0F, 1.0F);
             case "cosmetic_z_ring" ->
                     new SlotDefaults(0.5F/16F, 9.9F/16F, 0.0F, 180.0F, 180.0F, 0F, 0.33F);
+            case "cosmetic_head" ->
+                    new SlotDefaults(0.0F, -7.01F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
+            case "cosmetic_chest" ->
+                    new SlotDefaults(0.0F, 9.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
+            case "cosmetic_legs" ->
+                    new SlotDefaults(0.0F, 12.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
+            case "cosmetic_feet" ->
+                    new SlotDefaults(0.0F, 12.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.05F);
             default ->
                     new SlotDefaults(0.0F, 0.0F, 0.0F, 0F, 0F, 0F, 1.0F);
         };
@@ -93,50 +101,80 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
     ) {
         if (!(entityModel instanceof HumanoidModel<?> humanoidModel)) return;
 
-        poseStack.pushPose();
-
         String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
         SlotDefaults defaults = getDefaults(itemId);
         CosmeticDefinition def = getCosmeticDefinition(stack);
-
         LivingEntity entity = reference.entity();
         MovementState.State state = MovementState.get(entity.getUUID());
 
+        // Gliding override
         if (state.gliding) {
+            poseStack.pushPose();
             humanoidModel.body.translateAndRotate(poseStack);
             applyTransforms(poseStack, defaults, def);
             Minecraft.getInstance().getItemRenderer().renderStatic(
-                    stack,
-                    ItemDisplayContext.NONE,
-                    packedLight,
-                    OverlayTexture.NO_OVERLAY,
-                    poseStack,
-                    bufferSource,
-                    entity.level(),
-                    0
-            );
+                    stack, ItemDisplayContext.NONE, packedLight, OverlayTexture.NO_OVERLAY,
+                    poseStack, bufferSource, entity.level(), 0);
             poseStack.popPose();
             return;
         }
 
-        String attachPoint = (def != null && def.attach().isPresent())
-                ? def.attach().get()
-                : getDefaultAttachPoint(itemId);
+        // Check if this item should render on both sides
+        if (isPairedItem(itemId)) {
+            renderBothSides(stack, poseStack, humanoidModel, defaults, def, bufferSource, packedLight, entity);
+        } else {
+            String attachPoint = (def != null && def.attach().isPresent())
+                    ? def.attach().get()
+                    : getDefaultAttachPoint(itemId);
 
-        attachToBodyPart(poseStack, humanoidModel, attachPoint);
+            poseStack.pushPose();
+            attachToBodyPart(poseStack, humanoidModel, attachPoint);
+            applyTransforms(poseStack, defaults, def);
+            Minecraft.getInstance().getItemRenderer().renderStatic(
+                    stack, ItemDisplayContext.NONE, packedLight, OverlayTexture.NO_OVERLAY,
+                    poseStack, bufferSource, entity.level(), 0);
+            poseStack.popPose();
+        }
+    }
 
+    private boolean isPairedItem(String itemId) {
+        return switch (itemId) {
+            case "cosmetic_shoes", "cosmetic_feet", "cosmetic_legs" -> true;
+            default -> false;
+        };
+    }
+
+    private void renderBothSides(ItemStack stack, PoseStack poseStack, HumanoidModel<?> model,
+                                 SlotDefaults defaults, CosmeticDefinition def,
+                                 MultiBufferSource bufferSource, int packedLight, LivingEntity entity) {
+        String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+
+        String leftAttach, rightAttach;
+        if (itemId.contains("shoes") || itemId.contains("feet") || itemId.contains("anklet") || itemId.contains("legs")) {
+            leftAttach = "left_leg";
+            rightAttach = "right_leg";
+        } else {
+            leftAttach = "left_arm";
+            rightAttach = "right_arm";
+        }
+
+        // Left side
+        poseStack.pushPose();
+        attachToBodyPart(poseStack, model, leftAttach);
+        poseStack.scale(-1, 1, 1); // Mirror X only
         applyTransforms(poseStack, defaults, def);
         Minecraft.getInstance().getItemRenderer().renderStatic(
-                stack,
-                ItemDisplayContext.NONE,
-                packedLight,
-                OverlayTexture.NO_OVERLAY,
-                poseStack,
-                bufferSource,
-                entity.level(),
-                0
-        );
+                stack, ItemDisplayContext.NONE, packedLight, OverlayTexture.NO_OVERLAY,
+                poseStack, bufferSource, entity.level(), 0);
+        poseStack.popPose();
 
+        // Right side
+        poseStack.pushPose();
+        attachToBodyPart(poseStack, model, rightAttach);
+        applyTransforms(poseStack, defaults, def);
+        Minecraft.getInstance().getItemRenderer().renderStatic(
+                stack, ItemDisplayContext.NONE, packedLight, OverlayTexture.NO_OVERLAY,
+                poseStack, bufferSource, entity.level(), 0);
         poseStack.popPose();
     }
 
@@ -146,6 +184,10 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
                  "cosmetic_dynamax_band", "cosmetic_mega_bracelet", "cosmetic_z_ring" -> "left_arm";
             case "cosmetic_face", "cosmetic_hat" -> "head";
             case "cosmetic_anklet" -> "right_leg";
+            case "cosmetic_head" -> "head";
+            case "cosmetic_chest" -> "body";
+            case "cosmetic_legs" -> "right_leg";
+            case "cosmetic_feet" -> "right_leg";
             default -> "body";
         };
     }

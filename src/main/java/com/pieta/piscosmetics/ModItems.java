@@ -1,6 +1,9 @@
 package com.pieta.piscosmetics;
 
+import com.pieta.piscosmetics.item.CosmeticArmorItem;
 import com.pieta.piscosmetics.item.CosmeticItem;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -58,6 +61,16 @@ public class ModItems {
     public static final DeferredItem<CosmeticItem> COSMETIC_Z_RING =
             ITEMS.register("cosmetic_z_ring",
                     () -> new CosmeticItem(new Item.Properties().stacksTo(1)));
-
-
+    public static final DeferredItem<CosmeticArmorItem> COSMETIC_HEAD =
+            ITEMS.register("cosmetic_head",
+                    () -> new CosmeticArmorItem(new Item.Properties().stacksTo(1), EquipmentSlot.HEAD));
+    public static final DeferredItem<CosmeticArmorItem> COSMETIC_CHEST =
+            ITEMS.register("cosmetic_chest",
+                    () -> new CosmeticArmorItem(new Item.Properties().stacksTo(1), EquipmentSlot.CHEST));
+    public static final DeferredItem<CosmeticArmorItem> COSMETIC_LEGS =
+            ITEMS.register("cosmetic_legs",
+                    () -> new CosmeticArmorItem(new Item.Properties().stacksTo(1), EquipmentSlot.LEGS));
+    public static final DeferredItem<CosmeticArmorItem> COSMETIC_FEET =
+            ITEMS.register("cosmetic_feet",
+                    () -> new CosmeticArmorItem(new Item.Properties().stacksTo(1), EquipmentSlot.FEET));
 }

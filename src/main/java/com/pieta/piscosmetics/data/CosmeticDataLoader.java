@@ -21,23 +21,6 @@ public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().create();
     public static final Map<ResourceLocation, CosmeticDefinition> DEFINITIONS = new HashMap<>();
 
-    public static CosmeticDefinition getDefinitionFromEntity(LivingEntity entity) {
-
-        ItemStack stack = entity.getMainHandItem(); // or chest/custom slot if you use one
-
-        String cosmeticId = stack
-                .getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
-                .copyTag()
-                .getString("cosmetic");
-
-        if (cosmeticId.isEmpty()) return null;
-
-        ResourceLocation id = ResourceLocation.tryParse(cosmeticId);
-        if (id == null) return null;
-
-        return getDefinition(id);
-    }
-
     public CosmeticDataLoader() {
         super(GSON, "cosmetic");
     }
@@ -48,7 +31,7 @@ public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
         System.out.println("=== Loading cosmetics ===");
         for (var entry : objects.entrySet()) {
             ResourceLocation id = entry.getKey();
-            System.out.println("Loading: " + id + " -> " + entry.getValue());
+            System.out.println("Loading: " + id);
             try {
                 CosmeticDefinition def = CosmeticDefinition.CODEC.parse(JsonOps.INSTANCE, entry.getValue())
                         .resultOrPartial(error -> {
@@ -56,12 +39,14 @@ public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
                         })
                         .orElse(null);
                 if (def != null) {
-                    System.out.println("Loaded: " + id + " particles=" + def.particles());
+                    System.out.println("Loaded: " + id + " hide_armor=" + def.hideArmor());
                     DEFINITIONS.put(id, def);
                 }
             } catch (Exception e) {
+                System.err.println("EXCEPTION loading " + id + ": " + e.getMessage());
             }
         }
+        System.out.println("=== Loaded " + DEFINITIONS.size() + " cosmetics ===");
     }
 
     public static CosmeticDefinition getDefinition(ResourceLocation id) {
