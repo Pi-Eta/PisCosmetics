@@ -36,7 +36,7 @@ repositories {
         name = "CurseMaven"
         url = "https://cursemaven.com"
         content {
-            includeGroup "maven.modrinth"
+            includeGroup "curse.maven"
         }
     }
     maven {
@@ -137,13 +137,13 @@ dependencies {
     // Accessories
     implementation "io.wispforest:accessories-neoforge:1.1.0-beta.52+1.21.1"
     // Geckolib
-    implementation "maven.modrinth:geckolib-388172:7415496"
+    implementation "curse.maven:geckolib-388172:7415496"
     // Cobblemon
-    implementation "maven.modrinth:cobblemon-687131:7553231"
+    implementation "curse.maven:cobblemon-687131:7553231"
     // Mega Showdown
-    implementation "maven.modrinth:cobblemon-mega-showdown-1189523:8081363"
-    implementation "maven.modrinth:architectury-api-419699:5786327"
-    implementation "maven.modrinth:kotlin-for-forge-351264:6994056"
+    implementation "curse.maven:cobblemon-mega-showdown-1189523:8081363"
+    implementation "curse.maven:architectury-api-419699:5786327"
+    implementation "curse.maven:kotlin-for-forge-351264:6994056"
 
 }
 
