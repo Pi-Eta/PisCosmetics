@@ -1,0 +1,74 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
+
+    modImplementation "io.wispforest:accessories-neoforge:${rootProject.accessories_version}"
+    // Accessories dependencies, only in neoforge
+    forgeRuntimeLibrary "blue.endless:jankson:1.2.2"
+    forgeRuntimeLibrary "io.wispforest:endec:0.1.5.1"
+    forgeRuntimeLibrary "io.wispforest.endec:gson:0.1.3.1"
+    forgeRuntimeLibrary "io.wispforest.endec:jankson:0.1.3.1"
+    forgeRuntimeLibrary "io.wispforest.endec:netty:0.1.2"
+
+    modImplementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:${rootProject.geckolib_version}"
+
+    // Test only
+    modLocalRuntime "com.cobblemon:neoforge:${rootProject.cobblemon_version}"
+    forgeRuntimeLibrary("thedarkcolour:kotlinforforge-neoforge:${rootProject.neoforge_kotlin_version}") {
+        exclude group: "net.neoforged.fancymodloader", module: "loader"
+    }
+    modLocalRuntime "dev.architectury:architectury-neoforge:${rootProject.architectury_api_version}"
+    modLocalRuntime "maven.modrinth:cobblemon-mega-showdown:${rootProject.megashowdown_neoforge_id}"
+}
+
+processResources {
+    inputs.property 'version', project.version
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand version: project.version
+    }
+}
+
+// Classpaths for common resources in NeoForge
+sourceSets {
+    main {
+        resources {
+            srcDir "../common/src/main/resources"
+        }
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = 'dev-shadow'
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+}

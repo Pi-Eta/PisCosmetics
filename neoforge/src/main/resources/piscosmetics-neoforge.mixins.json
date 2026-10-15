@@ -1,0 +1,12 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "com.pieta.piscosmetics.neoforge.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "client": [
+        "NeoForgeHumanoidArmorLayerMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

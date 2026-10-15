@@ -1,0 +1,48 @@
+# NeoForge metadata
+modLoader="javafml"
+loaderVersion="[1,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="piscosmetics"
+version="${version}"
+displayName="Pi's Cosmetics"
+authors="Pi-Eta"
+description='''
+Adds a framework for rendering animated cosmetics. Based on Accessories and Mega Showdown.
+'''
+
+# Shared mixins
+[[mixins]]
+config="piscosmetics.mixins.json"
+
+[[mixins]]
+config="piscosmetics-neoforge.mixins.json"
+
+[[dependencies.piscosmetics]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1.200,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.piscosmetics]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21.1]"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.piscosmetics]]
+    modId="accessories"
+    type="required"
+    versionRange="[1.1.0-beta.52,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.piscosmetics]]
+    modId="geckolib"
+    type="required"
+    versionRange="[4.8.3,)"
+    ordering="NONE"
+    side="BOTH"
