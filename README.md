@@ -200,6 +200,8 @@ Your resourcepack should be structured as follows:
         ├── 📁 textures/
         │   └── 📁 item/
         │       └── my_cool_hat.png
+        │   └── 📁 particle/
+        │       └── my_particle.png
         │
         └── 📁 animations/
             └── my_cool_hat.animation.json
