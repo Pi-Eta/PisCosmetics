@@ -28,23 +28,29 @@ dependencies {
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 
-    modImplementation "io.wispforest:accessories-neoforge:${rootProject.accessories_version}"
-    // Accessories dependencies, only in neoforge
-    forgeRuntimeLibrary "blue.endless:jankson:1.2.2"
-    forgeRuntimeLibrary "io.wispforest:endec:0.1.5.1"
-    forgeRuntimeLibrary "io.wispforest.endec:gson:0.1.3.1"
-    forgeRuntimeLibrary "io.wispforest.endec:jankson:0.1.3.1"
-    forgeRuntimeLibrary "io.wispforest.endec:netty:0.1.2"
-
+    modCompileOnly "io.wispforest:accessories-neoforge:${rootProject.accessories_version}"
     modImplementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:${rootProject.geckolib_version}"
 
-    // Test only
-    modLocalRuntime "com.cobblemon:neoforge:${rootProject.cobblemon_version}"
-    forgeRuntimeLibrary("thedarkcolour:kotlinforforge-neoforge:${rootProject.neoforge_kotlin_version}") {
-        exclude group: "net.neoforged.fancymodloader", module: "loader"
+    // Test only, picked by test_profile in gradle.properties
+    def profile = rootProject.test_profile
+    if (profile != 'vanilla') {
+        modLocalRuntime "io.wispforest:accessories-neoforge:${rootProject.accessories_version}"
+        // Accessories dependencies, only in neoforge
+        forgeRuntimeLibrary "blue.endless:jankson:1.2.2"
+        forgeRuntimeLibrary "io.wispforest:endec:0.1.5.1"
+        forgeRuntimeLibrary "io.wispforest.endec:gson:0.1.3.1"
+        forgeRuntimeLibrary "io.wispforest.endec:jankson:0.1.3.1"
+        forgeRuntimeLibrary "io.wispforest.endec:netty:0.1.2"
+
+        modLocalRuntime "com.cobblemon:neoforge:${rootProject.cobblemon_version}"
+        forgeRuntimeLibrary("thedarkcolour:kotlinforforge-neoforge:${rootProject.neoforge_kotlin_version}") {
+            exclude group: "net.neoforged.fancymodloader", module: "loader"
+        }
     }
-    modLocalRuntime "dev.architectury:architectury-neoforge:${rootProject.architectury_api_version}"
-    modLocalRuntime "maven.modrinth:cobblemon-mega-showdown:${rootProject.megashowdown_neoforge_id}"
+    if (profile == 'megashowdown') {
+        modLocalRuntime "dev.architectury:architectury-neoforge:${rootProject.architectury_api_version}"
+        modLocalRuntime "maven.modrinth:cobblemon-mega-showdown:${rootProject.megashowdown_neoforge_id}"
+    }
 }
 
 processResources {

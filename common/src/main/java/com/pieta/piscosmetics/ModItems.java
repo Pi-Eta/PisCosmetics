@@ -42,6 +42,9 @@ public final class ModItems {
     public static CosmeticArmorItem COSMETIC_LEGS;
     public static CosmeticArmorItem COSMETIC_FEET;
 
+    // The universal item: its slot comes from the cosmetic's JSON "slot" field (CosmeticSlotNames)
+    public static CosmeticItem COSMETIC;
+
     private static final List<Item> ALL_ITEMS = new ArrayList<>();
 
     /** Every item in order. */
@@ -65,13 +68,16 @@ public final class ModItems {
 
         COSMETIC_DYNAMAX_BAND = add(registrar, "cosmetic_dynamax_band", new CosmeticItem(props()));
         COSMETIC_MEGA_BRACELET = add(registrar, "cosmetic_mega_bracelet", new CosmeticItem(props()));
-        COSMETIC_TERA_ORB = add(registrar, "cosmetic_tera_orb", new CosmeticItem(props()));
+        // Mega Showdown stores a Tera Orb's charge as damage (+10 per use, usable below 100), like its own orb
+        COSMETIC_TERA_ORB = add(registrar, "cosmetic_tera_orb", new CosmeticItem(new Item.Properties().durability(100)));
         COSMETIC_Z_RING = add(registrar, "cosmetic_z_ring", new CosmeticItem(props()));
 
         COSMETIC_HEAD = add(registrar, "cosmetic_head", new CosmeticArmorItem(props(), EquipmentSlot.HEAD));
         COSMETIC_CHEST = add(registrar, "cosmetic_chest", new CosmeticArmorItem(props(), EquipmentSlot.CHEST));
         COSMETIC_LEGS = add(registrar, "cosmetic_legs", new CosmeticArmorItem(props(), EquipmentSlot.LEGS));
         COSMETIC_FEET = add(registrar, "cosmetic_feet", new CosmeticArmorItem(props(), EquipmentSlot.FEET));
+
+        COSMETIC = add(registrar, "cosmetic", new CosmeticItem(props()));
     }
 
     private static Item.Properties props() {

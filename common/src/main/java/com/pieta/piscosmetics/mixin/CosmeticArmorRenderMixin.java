@@ -1,10 +1,9 @@
 package com.pieta.piscosmetics.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.pieta.piscosmetics.client.renderer.CosmeticAccessoryRenderer;
+import com.pieta.piscosmetics.api.CosmeticSlotNames;
+import com.pieta.piscosmetics.client.renderer.CosmeticRenderer;
 import com.pieta.piscosmetics.item.CosmeticArmorItem;
-import io.wispforest.accessories.api.slot.SlotReference;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
@@ -16,10 +15,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/** Draws cosmetics worn in the vanilla armor slots. Uses no Accessories types, so it works without it. */
 @Mixin(HumanoidArmorLayer.class)
 public class CosmeticArmorRenderMixin {
-
-    private final CosmeticAccessoryRenderer RENDERER = new CosmeticAccessoryRenderer();
 
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V",
             at = @At("HEAD"))
@@ -34,20 +32,10 @@ public class CosmeticArmorRenderMixin {
             if (slot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR) continue;
 
             ItemStack stack = livingEntity.getItemBySlot(slot);
-            if (!(stack.getItem() instanceof CosmeticArmorItem)) continue;
+            // The four armor-slot items, or the universal item when its JSON names an armor slot
+            if (!(stack.getItem() instanceof CosmeticArmorItem) && !CosmeticSlotNames.isUniversal(stack)) continue;
 
-            String slotName = switch (slot) {
-                case HEAD -> "head";
-                case CHEST -> "chest";
-                case LEGS -> "legs";
-                case FEET -> "feet";
-                default -> slot.getName();
-            };
-
-            SlotReference ref = SlotReference.of(livingEntity, slotName, 0);
-            RENDERER.render(stack, ref, poseStack, parentModel, bufferSource,
-                    packedLight, limbSwing, limbSwingAmount, partialTick,
-                    ageInTicks, netHeadYaw, headPitch);
+            CosmeticRenderer.render(stack, livingEntity, poseStack, parentModel, bufferSource, packedLight);
         }
     }
 }

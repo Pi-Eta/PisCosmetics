@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.CustomData;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
+import com.pieta.piscosmetics.api.CosmeticSlotNames;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
 import com.pieta.piscosmetics.item.CosmeticHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,25 +29,43 @@ public class CosmeticGeoRenderer extends GeoItemRenderer<CosmeticItem> {
      */
     public static CosmeticGeoRenderer create(CosmeticItem item) {
         CosmeticGeoRenderer[] holder = new CosmeticGeoRenderer[1];
-        holder[0] = new CosmeticGeoRenderer(new DefaultedItemGeoModel<CosmeticItem>(BuiltInRegistries.ITEM.getKey(item)) {
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+        holder[0] = new CosmeticGeoRenderer(new DefaultedItemGeoModel<CosmeticItem>(itemId) {
             private CosmeticDefinition getDef() {
                 ItemStack stack = holder[0].getCurrentItemStack();
                 return CosmeticHelper.getDefinition(stack);
             }
 
+            /**
+             * The item name the default model, texture and animation are named after. For the universal
+             * item that's the original item for its slot, so a "wrist" cosmetic without its own model
+             * shows cosmetic_wrist's.
+             */
+            private String defaultsName() {
+                ItemStack stack = holder[0].getCurrentItemStack();
+                if (stack != null && CosmeticSlotNames.isUniversal(stack)) {
+                    return CosmeticSlotNames.legacyItemFor(CosmeticSlotNames.slotKey(stack));
+                }
+                return itemId.getPath();
+            }
+
+            private ResourceLocation defaultPath(String folder, String suffix) {
+                return ResourceLocation.fromNamespaceAndPath(itemId.getNamespace(), folder + defaultsName() + suffix);
+            }
+
             @Override
             public ResourceLocation getModelResource(CosmeticItem animatable) {
-                return CosmeticHelper.getModelResource(animatable, getDef(), super.getModelResource(animatable));
+                return CosmeticHelper.getModelResource(animatable, getDef(), defaultPath("geo/item/", ".geo.json"));
             }
 
             @Override
             public ResourceLocation getTextureResource(CosmeticItem animatable) {
-                return CosmeticHelper.getTextureResource(animatable, getDef(), super.getTextureResource(animatable));
+                return CosmeticHelper.getTextureResource(animatable, getDef(), defaultPath("textures/item/", ".png"));
             }
 
             @Override
             public ResourceLocation getAnimationResource(CosmeticItem animatable) {
-                return CosmeticHelper.getAnimationResource(animatable, getDef(), super.getAnimationResource(animatable));
+                return CosmeticHelper.getAnimationResource(animatable, getDef(), defaultPath("animations/", ".animation.json"));
             }
         });
         return holder[0];

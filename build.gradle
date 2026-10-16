@@ -11,6 +11,12 @@ architectury {
     minecraft = project.minecraft_version
 }
 
+// Catch typos in test_profile instead of quietly loading the wrong test mods
+def testProfiles = ['vanilla', 'megashowdown']
+if (!testProfiles.contains(project.test_profile)) {
+    throw new GradleException("test_profile must be one of ${testProfiles}, not '${project.test_profile}'")
+}
+
 allprojects {
     group = rootProject.mod_group_id
     version = rootProject.mod_version

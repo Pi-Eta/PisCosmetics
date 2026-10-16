@@ -3,7 +3,7 @@
   "id": "piscosmetics",
   "version": "${version}",
   "name": "Pi's Cosmetics",
-  "description": "Adds a framework for rendering animated cosmetics. Based on Accessories and Mega Showdown.",
+  "description": "Adds a framework for rendering animated cosmetics, with optional support for Accessories and Mega Showdown.",
   "authors": ["Pi-Eta"],
   "license": "All Rights Reserved",
   "environment": "*",
@@ -20,7 +20,12 @@
     "minecraft": "~1.21.1",
     "java": ">=21",
     "fabric-api": "*",
-    "accessories": ">=1.1.0-beta.52",
     "geckolib": ">=4.8.3"
+  },
+  "suggests": {
+    "accessories": "*"
+  },
+  "breaks": {
+    "accessories": "<1.1.0-beta.52"
   }
 }

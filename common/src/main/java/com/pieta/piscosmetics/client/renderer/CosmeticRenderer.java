@@ -5,22 +5,26 @@ import net.minecraft.world.entity.LivingEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
+import com.pieta.piscosmetics.api.CosmeticSlotNames;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
-import io.wispforest.accessories.api.client.AccessoryRenderer;
-import io.wispforest.accessories.api.slot.SlotReference;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
-public class CosmeticAccessoryRenderer implements AccessoryRenderer {
+/**
+ * Draws one worn cosmetic on a humanoid model. Used for every place a cosmetic can be worn:
+ * the vanilla armor slots (CosmeticArmorRenderMixin) and, when installed, Accessories slots
+ * (compat/accessories/CosmeticAccessoryRenderer). It mentions no Accessories types, so it works without it.
+ */
+public final class CosmeticRenderer {
+
+    private CosmeticRenderer() {}
 
     private record SlotDefaults(
             float transX, float transY, float transZ,
@@ -28,47 +32,48 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
             float scale
     ) {}
 
-    private static SlotDefaults getDefaults(String itemId) {
-        return switch (itemId) {
-            case "cosmetic_hat" ->
+    /** Offsets, rotation and scale per slot key (see CosmeticSlotNames). */
+    private static SlotDefaults getDefaults(String slotKey) {
+        return switch (slotKey) {
+            case "hat" ->
                     new SlotDefaults(0.0F, -7.01F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_anklet" ->
+            case "anklet" ->
                     new SlotDefaults(0.0F, 9.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_back" ->
+            case "back" ->
                     new SlotDefaults(0.0F, 9.0F/16F, 2.0F/16F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_belt" ->
+            case "belt" ->
                     new SlotDefaults(-1.0F/16F, 0.5F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_cape" ->
+            case "cape" ->
                     new SlotDefaults(0.0F, 12.0F/16F, 2.0F/16F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_charm" ->
+            case "charm" ->
                     new SlotDefaults(0.0F, 6.0F/16F, -1.05F/16F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_face" ->
+            case "face" ->
                     new SlotDefaults(0.0F, -2.5F/16F, -2.05F/16F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_hand" ->
+            case "hand" ->
                     new SlotDefaults(0.5F/16F, 9.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_necklace" ->
+            case "necklace" ->
                     new SlotDefaults(0.0F, 6.0F/16F, -1.05F/16F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_ring" ->
+            case "ring" ->
                     new SlotDefaults(0.5F/16F, 9.9F/16F, 0.0F, 180.0F, 180.0F, 0F, 0.33F);
-            case "cosmetic_shoes" ->
+            case "shoes" ->
                     new SlotDefaults(0.0F, 12.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.05F);
-            case "cosmetic_wrist" ->
+            case "wrist" ->
                     new SlotDefaults(0.5F/16F, 9.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_dynamax_band" ->
+            case "dynamax_slot" ->
                     new SlotDefaults(0.5F/16F, 9.0F/16F, -1.5F/16F, 180.0F, 180.0F, 0F, 0.5F);
-            case "cosmetic_mega_bracelet" ->
+            case "mega_slot" ->
                     new SlotDefaults(0.5F/16F, 9.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_tera_orb" ->
+            case "tera_slot" ->
                     new SlotDefaults(-3.0F/16F, 5.0F/16F, -3.0F/16F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_z_ring" ->
+            case "z_slot" ->
                     new SlotDefaults(0.5F/16F, 9.9F/16F, 0.0F, 180.0F, 180.0F, 0F, 0.33F);
-            case "cosmetic_head" ->
+            case "head" ->
                     new SlotDefaults(0.0F, -7.01F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_chest" ->
+            case "chest" ->
                     new SlotDefaults(0.0F, 9.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_legs" ->
+            case "legs" ->
                     new SlotDefaults(0.0F, 12.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.0F);
-            case "cosmetic_feet" ->
+            case "feet" ->
                     new SlotDefaults(0.0F, 12.0F/16F, 0.0F, 180.0F, 180.0F, 0F, 1.05F);
             default ->
                     new SlotDefaults(0.0F, 0.0F, 0.0F, 0F, 0F, 0F, 1.0F);
@@ -84,27 +89,18 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
         return CosmeticDataLoader.getDefinition(id);
     }
 
-    @Override
-    public <M extends LivingEntity> void render(
+    public static void render(
             ItemStack stack,
-            SlotReference reference,
+            LivingEntity entity,
             PoseStack poseStack,
-            EntityModel<M> entityModel,
+            HumanoidModel<?> humanoidModel,
             MultiBufferSource bufferSource,
-            int packedLight,
-            float limbSwing,
-            float limbSwingAmount,
-            float partialTick,
-            float ageInTicks,
-            float netHeadYaw,
-            float headPitch
+            int packedLight
     ) {
-        if (!(entityModel instanceof HumanoidModel<?> humanoidModel)) return;
 
-        String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
-        SlotDefaults defaults = getDefaults(itemId);
+        String slotKey = CosmeticSlotNames.slotKey(stack);
+        SlotDefaults defaults = getDefaults(slotKey);
         CosmeticDefinition def = getCosmeticDefinition(stack);
-        LivingEntity entity = reference.entity();
         MovementState.State state = MovementState.get(entity.getUUID());
 
         // Gliding override
@@ -120,12 +116,12 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
         }
 
         // Check if this item should render on both sides
-        if (isPairedItem(itemId)) {
-            renderBothSides(stack, poseStack, humanoidModel, defaults, def, bufferSource, packedLight, entity);
+        if (isPairedItem(slotKey)) {
+            renderBothSides(stack, slotKey, poseStack, humanoidModel, defaults, def, bufferSource, packedLight, entity);
         } else {
             String attachPoint = (def != null && def.attach().isPresent())
                     ? def.attach().get()
-                    : getDefaultAttachPoint(itemId);
+                    : getDefaultAttachPoint(slotKey);
 
             poseStack.pushPose();
             attachToBodyPart(poseStack, humanoidModel, attachPoint);
@@ -137,20 +133,18 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
         }
     }
 
-    private boolean isPairedItem(String itemId) {
-        return switch (itemId) {
-            case "cosmetic_shoes", "cosmetic_feet", "cosmetic_legs" -> true;
+    private static boolean isPairedItem(String slotKey) {
+        return switch (slotKey) {
+            case "shoes", "feet", "legs" -> true;
             default -> false;
         };
     }
 
-    private void renderBothSides(ItemStack stack, PoseStack poseStack, HumanoidModel<?> model,
+    private static void renderBothSides(ItemStack stack, String slotKey, PoseStack poseStack, HumanoidModel<?> model,
                                  SlotDefaults defaults, CosmeticDefinition def,
                                  MultiBufferSource bufferSource, int packedLight, LivingEntity entity) {
-        String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
-
         String leftAttach, rightAttach;
-        if (itemId.contains("shoes") || itemId.contains("feet") || itemId.contains("anklet") || itemId.contains("legs")) {
+        if (slotKey.equals("shoes") || slotKey.equals("feet") || slotKey.equals("anklet") || slotKey.equals("legs")) {
             leftAttach = "left_leg";
             rightAttach = "right_leg";
         } else {
@@ -178,21 +172,21 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
         poseStack.popPose();
     }
 
-    private String getDefaultAttachPoint(String itemId) {
-        return switch (itemId) {
-            case "cosmetic_hand", "cosmetic_ring", "cosmetic_wrist",
-                 "cosmetic_dynamax_band", "cosmetic_mega_bracelet", "cosmetic_z_ring" -> "left_arm";
-            case "cosmetic_face", "cosmetic_hat" -> "head";
-            case "cosmetic_anklet" -> "right_leg";
-            case "cosmetic_head" -> "head";
-            case "cosmetic_chest" -> "body";
-            case "cosmetic_legs" -> "right_leg";
-            case "cosmetic_feet" -> "right_leg";
+    private static String getDefaultAttachPoint(String slotKey) {
+        return switch (slotKey) {
+            case "hand", "ring", "wrist",
+                 "dynamax_slot", "mega_slot", "z_slot" -> "left_arm";
+            case "face", "hat" -> "head";
+            case "anklet" -> "right_leg";
+            case "head" -> "head";
+            case "chest" -> "body";
+            case "legs" -> "right_leg";
+            case "feet" -> "right_leg";
             default -> "body";
         };
     }
 
-    private void attachToBodyPart(PoseStack poseStack, HumanoidModel<?> model, String attachPoint) {
+    private static void attachToBodyPart(PoseStack poseStack, HumanoidModel<?> model, String attachPoint) {
         switch (attachPoint.toLowerCase()) {
             case "head" -> model.head.translateAndRotate(poseStack);
             case "body", "chest" -> model.body.translateAndRotate(poseStack);
@@ -204,7 +198,7 @@ public class CosmeticAccessoryRenderer implements AccessoryRenderer {
         }
     }
 
-    private void applyTransforms(PoseStack poseStack, SlotDefaults defaults, CosmeticDefinition def) {
+    private static void applyTransforms(PoseStack poseStack, SlotDefaults defaults, CosmeticDefinition def) {
         // Apply defaults FIRST (as-is, no negation)
         poseStack.translate(defaults.transX, defaults.transY, defaults.transZ);
         poseStack.mulPose(Axis.XP.rotationDegrees(defaults.rotX));

@@ -1,9 +1,7 @@
 package com.pieta.piscosmetics.client;
 
-import com.pieta.piscosmetics.ModItems;
-import com.pieta.piscosmetics.client.renderer.CosmeticAccessoryRenderer;
-import io.wispforest.accessories.api.client.AccessoriesRendererRegistry;
-import net.minecraft.world.item.Item;
+import com.pieta.piscosmetics.compat.accessories.AccessoriesCompat;
+import com.pieta.piscosmetics.platform.Services;
 
 /**
  * Client only functions
@@ -20,11 +18,9 @@ public final class PisCosmeticsClient {
     }
 
     /**
-     * Called once during client startup, making Accessories use custom renderer
+     * Called once during client startup, making Accessories use custom renderer if installed
      */
     public static void clientSetup() {
-        for (Item item : ModItems.ALL) {
-            AccessoriesRendererRegistry.registerRenderer(item, CosmeticAccessoryRenderer::new);
-        }
+        if (Services.PLATFORM.isModLoaded("accessories")) AccessoriesCompat.initClient();
     }
 }

@@ -18,5 +18,7 @@
   "item.piscosmetics.cosmetic_head": "Cosmetic Head",
   "item.piscosmetics.cosmetic_chest": "Cosmetic Chest",
   "item.piscosmetics.cosmetic_legs": "Cosmetic Legs",
-  "item.piscosmetics.cosmetic_feet": "Cosmetic Feet"
+  "item.piscosmetics.cosmetic_feet": "Cosmetic Feet",
+  "item.piscosmetics.cosmetic": "Cosmetic",
+  "tooltip.piscosmetics.needs_accessories": "Needs the Accessories mod to wear"
 }

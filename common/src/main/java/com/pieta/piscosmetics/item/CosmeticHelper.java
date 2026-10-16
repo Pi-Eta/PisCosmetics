@@ -1,9 +1,9 @@
 package com.pieta.piscosmetics.item;
 
 import com.pieta.piscosmetics.api.CosmeticDefinition;
+import com.pieta.piscosmetics.api.CosmeticSlotNames;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -53,12 +53,13 @@ public class CosmeticHelper {
                         "animations/" + animId.getPath() + ".animation.json");
             }
         }
-        // Fallback to animations/ instead of animations/item/
-        ResourceLocation key = BuiltInRegistries.ITEM.getKey(animatable);
-        return ResourceLocation.fromNamespaceAndPath(
-                key.getNamespace(),
-                "animations/" + key.getPath() + ".animation.json"
-        );
+        // The renderer passes animations/<item>.animation.json (animations/, not animations/item/)
+        return fallback;
+    }
+
+    /** True for cosmetics that go in a vanilla armor slot, which work without Accessories. */
+    public static boolean canBeWornWithoutAccessories(ItemStack stack) {
+        return CosmeticSlotNames.armorSlot(CosmeticSlotNames.slotKey(stack)) != null;
     }
 
     public static net.minecraft.network.chat.Component getName(ItemStack stack, net.minecraft.network.chat.Component fallback) {

@@ -4,9 +4,10 @@
 Framework
 =======
 
-This mod extends the [Accessories mod](https://github.com/wisp-forest/accessories?tab=readme-ov-file) and
-[Mega Showdown mod](https://github.com/yajatkaul/CobblemonMegaShowdown) so that items in all slots
-can be rendered physically on the player model. Rendering is done through a custom
+This mod renders cosmetics physically on the player model. It works on its own (vanilla armor slots), and
+also supports the [Accessories mod](https://github.com/wisp-forest/accessories?tab=readme-ov-file) and
+[Mega Showdown mod](https://github.com/yajatkaul/CobblemonMegaShowdown) when they are installed, so that
+items in all their slots can be rendered too. Both are optional; only GeckoLib (and Fabric API on Fabric) is required. Rendering is done through a custom
 pipeline that uses [Geckolib](https://github.com/bernie-g/geckolib), allowing for animated attachments
 and features of textures like transparency and emission.
 
@@ -19,7 +20,16 @@ Datapack:
 ============
 
 New items are effectively copies of existing generic items with NBT data. To override the appearance of
-generic items, they must be specified in a datapack, structured as `data/your_namespace/cosmetics/newitem.json`.
+generic items, they must be specified in a datapack, structured as `data/your_namespace/cosmetic/newitem.json`.
+
+The easiest item to use is the universal cosmetic, whose slot comes from the JSON's `"slot"` field:
+
+```
+/give @s piscosmetics:cosmetic[custom_data={cosmetic:"your_namespace:my_cool_hat"}]
+```
+
+For this item, `"slot"` is required and decides where it can be worn. The older slot-specific items
+(`piscosmetics:cosmetic_hat`, `piscosmetics:cosmetic_wrist` and so on) still work, and always go in the slot in their name.
 
 ```
 📁 your_datapack/
@@ -107,13 +117,17 @@ one of the Mega Showdown slots, or a vanilla armour slot. The available slots ar
     - `"dynamax_slot"`
     - `"mega_slot"`
     - `"tera_slot"`
-    - `"z-slot"`
+    - `"z_slot"`
 
   - Vanilla slots
     - `"head"`
     - `"chest"`
     - `"legs"`
     - `"feet"`
+
+  Accessories and Mega Showdown slots need those mods installed; the vanilla slots always work. A slot that
+  doesn't exist on a server simply can't be equipped there. To use a slot added by another mod or datapack,
+  also add `piscosmetics:cosmetic` to that slot's item tag, `data/accessories/tags/item/<slot>.json`.
 
 
 - `"name"`: Display name for item in your inventory

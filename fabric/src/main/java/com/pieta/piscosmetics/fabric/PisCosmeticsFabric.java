@@ -33,5 +33,8 @@ public final class PisCosmeticsFabric implements ModInitializer {
         });
 
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new FabricCosmeticDataLoader());
+
+        // After the items exist, like NeoForge's common setup
+        PisCosmetics.commonSetup();
     }
 }

@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -29,6 +30,8 @@ public final class PisCosmeticsNeoForge {
             event.register(Registries.PARTICLE_TYPE, helper -> ModParticles.register(helper::register));
         });
         modBus.addListener(RegisterPayloadHandlersEvent.class, NeoForgeNetworking::register);
+        // No items exist yet while this constructor runs, so optional-mod setup waits for common setup
+        modBus.addListener(FMLCommonSetupEvent.class, event -> event.enqueueWork(PisCosmetics::commonSetup));
 
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) PisCosmetics.onPlayerJoin(player);
