@@ -1,0 +1,12 @@
+{
+  "type": "piscosmetics:copy_blueprint",
+  "ingredients": [
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:lapis_lazuli"
+    }
+  ],
+  "count": 2
+}

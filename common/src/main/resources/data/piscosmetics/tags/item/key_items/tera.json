@@ -1,0 +1,16 @@
+{
+  "values": [
+    {
+      "id": "genesisforms:tera_orb",
+      "required": false
+    },
+    {
+      "id": "#mega_showdown:tera_orb",
+      "required": false
+    },
+    {
+      "id": "#mega_showdown:omni_ring",
+      "required": false
+    }
+  ]
+}

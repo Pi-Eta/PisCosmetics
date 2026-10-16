@@ -13,8 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Draws a cosmetic in place of another mod's worn item (a Genesis Forms Key Stone, say).
- * AccessoriesRendererRegistryMixin hands out this renderer only for stacks that resolve to a cosmetic.
+ * Draws a cosmetic in place of another mod's worn item, see AccessoriesRendererRegistryMixin
  */
 public class StandInRenderer implements AccessoryRenderer {
 

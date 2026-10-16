@@ -13,11 +13,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Every full Accessories sync goes out through one of these two methods. With Polymer installed,
- * PolymerAccessoriesSync sends its own per-player copies instead, with server-only items disguised.
- * <p>
- * Pseudo and require = 0 like AccessoriesRendererRegistryMixin: skipped without Accessories, and the game
- * still starts if Accessories changes these methods.
+ * Full Accessories syncs go through PolymerAccessoriesSync when Polymer is installed.
+ * Pseudo and require = 0 like AccessoriesRendererRegistryMixin
  */
 @Pseudo
 @Mixin(targets = "io.wispforest.accessories.networking.AccessoriesNetworking", remap = false)

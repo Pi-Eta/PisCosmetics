@@ -19,7 +19,7 @@ public final class PisCosmetics {
         if (Services.PLATFORM.isModLoaded("accessories")) AccessoriesCompat.init();
     }
 
-    /** Send every cosmetic definition to a player: on join, and again after /reload or /datapack changes */
+    /** Sends all definitions to a player, on join and after /reload */
     public static void sendDefinitions(ServerPlayer player) {
         Services.PLATFORM.sendToPlayer(player, new CosmeticSyncPacket(CosmeticDataLoader.getAllDefinitions()));
     }

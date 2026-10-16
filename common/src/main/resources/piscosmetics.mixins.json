@@ -4,14 +4,17 @@
     "package": "com.pieta.piscosmetics.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "LivingEntityCosmeticSlotMixin"
+        "LivingEntityCosmeticSlotMixin",
+        "GrindstoneMenuMixin",
+        "GrindstoneInputSlotMixin"
     ],
     "client": [
         "ElytraLayerMixin",
         "ItemRendererMixin",
         "CosmeticArmorRenderMixin",
         "compat.AccessoriesRendererRegistryMixin",
-        "compat.AccessoriesAPIMixin"
+        "compat.AccessoriesAPIMixin",
+        "ItemStackLookTooltipMixin"
     ],
     "injectors": {
         "defaultRequire": 1

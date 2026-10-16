@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
+import com.pieta.piscosmetics.api.KeyItemTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -23,7 +24,7 @@ import java.util.Map;
 public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().create();
     public static final Map<ResourceLocation, CosmeticDefinition> DEFINITIONS = new HashMap<>();
-    /** Item ID -> the cosmetic whose render_for names it (the default look for that item when worn). */
+    /** Item ID -> cosmetic whose render_for names it */
     private static final Map<ResourceLocation, ResourceLocation> STAND_INS = new HashMap<>();
 
     public CosmeticDataLoader() {
@@ -43,6 +44,12 @@ public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
                             System.err.println("PARSE ERROR for " + id + ": " + error);
                         })
                         .orElse(null);
+                // Otherwise a typo would make a key item look craftable from the blueprint base
+                if (def != null && !KeyItemTypes.unknown(def.keyItems()).isEmpty()) {
+                    System.err.println("PARSE ERROR for " + id + ": unknown key_items " + KeyItemTypes.unknown(def.keyItems())
+                            + ", expected any of " + KeyItemTypes.ALL + ". Skipping this cosmetic");
+                    def = null;
+                }
                 if (def != null) {
                     System.out.println("Loaded: " + id + " hide_armor=" + def.hideArmor());
                     DEFINITIONS.put(id, def);
@@ -55,14 +62,14 @@ public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
         rebuildStandIns();
     }
 
-    /** Replaces every definition, e.g. with the ones the server sent. */
+    /** Replaces all definitions, e.g. with the server's */
     public static void setDefinitions(Map<ResourceLocation, CosmeticDefinition> definitions) {
         DEFINITIONS.clear();
         DEFINITIONS.putAll(definitions);
         rebuildStandIns();
     }
 
-    /** Sorted by cosmetic ID, so server and clients pick the same winner when two cosmetics name one item. */
+    /** Sorted so server and clients pick the same cosmetic when two name one item */
     private static void rebuildStandIns() {
         STAND_INS.clear();
         List<ResourceLocation> ids = new ArrayList<>(DEFINITIONS.keySet());
@@ -78,7 +85,7 @@ public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
         }
     }
 
-    /** The cosmetic whose render_for names this item, or null. */
+    /** Cosmetic whose render_for names this item, or null */
     public static ResourceLocation getStandIn(ResourceLocation itemId) {
         return itemId == null ? null : STAND_INS.get(itemId);
     }

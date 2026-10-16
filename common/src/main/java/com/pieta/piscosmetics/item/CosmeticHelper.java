@@ -4,7 +4,11 @@ import com.pieta.piscosmetics.ModItems;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
 import com.pieta.piscosmetics.api.CosmeticSlotNames;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -17,10 +21,10 @@ import java.util.Map;
 
 public class CosmeticHelper {
 
-    /** Where Polymer keeps the real item inside a disguised one (server-only mods like Genesis Forms). */
+    /** Where Polymer keeps the real item inside a disguised one */
     private static final String POLYMER_STACK = "$polymer:stack";
 
-    /** Cached universal items used to draw a cosmetic in place of another mod's item. */
+    /** Cached universal items for drawing stand-ins */
     private static final Map<ResourceLocation, ItemStack> DISPLAY_STACKS = new HashMap<>();
 
     public static CosmeticDefinition getDefinition(ItemStack stack) {
@@ -29,15 +33,12 @@ public class CosmeticHelper {
     }
 
     /**
-     * Which cosmetic this stack shows, or null. In order:
-     * 1. the stack's own "cosmetic" custom data (your items, or another mod's item given a look),
-     * 2. the same, inside a Polymer disguise (what players' clients receive for Genesis Forms items),
-     * 3. the default look for the item type, from a cosmetic's render_for.
-     * The same answer comes out on the server (real item) and on a player's client (disguised item).
+     * Cosmetic this stack shows, or null: its own "cosmetic" data, the same inside a Polymer disguise,
+     * then render_for. Same result on server and client
      */
     public static ResourceLocation getCosmeticId(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return null;
-        // Read without copying (this runs every frame for every worn item); nothing here changes the tag
+        // Not copied, runs every frame
         CompoundTag data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).getUnsafe();
         CompoundTag hidden = data.getCompound(POLYMER_STACK);
 
@@ -49,25 +50,49 @@ public class CosmeticHelper {
 
         String hiddenItemId = hidden.getString("id");
         ResourceLocation itemId = !hiddenItemId.isEmpty()
-                ? ResourceLocation.tryParse(hiddenItemId)               // client: the real ID inside the disguise
-                : BuiltInRegistries.ITEM.getKey(stack.getItem());       // server, or a normal item
+                ? ResourceLocation.tryParse(hiddenItemId)               // client, disguised
+                : BuiltInRegistries.ITEM.getKey(stack.getItem());
         return CosmeticDataLoader.getStandIn(itemId);
     }
 
-    /** The cosmetic to draw in place of another mod's item (never one of ours), or null. */
+    /** Cosmetic to draw in place of another mod's item, or null */
     public static ResourceLocation getStandInId(ItemStack stack) {
         if (stack.getItem() instanceof CosmeticItem) return null;
         ResourceLocation id = getCosmeticId(stack);
-        // A look whose cosmetic no longer exists (removed datapack, typo) isn't drawn; the item renders as normal
+        // Missing cosmetic: the item renders as normal
         return id != null && CosmeticDataLoader.getDefinition(id) != null ? id : null;
     }
 
-    /** True for an item Polymer has disguised as a vanilla one. */
+    /** Look applied to another mod's item, or null. Ignores our items and render_for */
+    public static ResourceLocation getAppliedLook(ItemStack stack) {
+        if (stack.isEmpty() || stack.getItem() instanceof CosmeticItem || stack.getItem() instanceof CosmeticBlueprintItem) return null;
+        CompoundTag data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).getUnsafe();
+        String cosmeticId = data.getString("cosmetic");
+        if (cosmeticId.isEmpty()) {
+            cosmeticId = data.getCompound(POLYMER_STACK).getCompound("components").getCompound("minecraft:custom_data").getString("cosmetic");
+        }
+        return cosmeticId.isEmpty() ? null : ResourceLocation.tryParse(cosmeticId);
+    }
+
+    /** Copy without the applied look, for the grindstone */
+    public static ItemStack withoutLook(ItemStack stack) {
+        ItemStack result = stack.copy();
+        CustomData.update(DataComponents.CUSTOM_DATA, result, tag -> {
+            tag.remove("cosmetic");
+            // Client preview of a disguised item
+            if (tag.contains(POLYMER_STACK)) {
+                tag.getCompound(POLYMER_STACK).getCompound("components").getCompound("minecraft:custom_data").remove("cosmetic");
+            }
+        });
+        return result;
+    }
+
+    /** True if Polymer disguised it as a vanilla item */
     public static boolean isDisguised(ItemStack stack) {
         return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains(POLYMER_STACK);
     }
 
-    /** The real item ID inside a Polymer disguise, or null if the stack isn't disguised. */
+    /** Real item ID inside a Polymer disguise, or null */
     public static ResourceLocation getDisguisedItemId(ItemStack stack) {
         if (!isDisguised(stack)) return null;
         String id = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).getUnsafe()
@@ -75,7 +100,7 @@ public class CosmeticHelper {
         return id.isEmpty() ? null : ResourceLocation.tryParse(id);
     }
 
-    /** A universal item showing this cosmetic, so stand-ins are drawn exactly like any other cosmetic. */
+    /** Universal item showing this cosmetic, for stand-ins */
     public static ItemStack displayStack(ResourceLocation cosmeticId) {
         return DISPLAY_STACKS.computeIfAbsent(cosmeticId, id -> {
             ItemStack stack = new ItemStack(ModItems.COSMETIC);
@@ -113,7 +138,6 @@ public class CosmeticHelper {
             String anim = def.animation().get();
             ResourceLocation animId = ResourceLocation.tryParse(anim);
             if (animId != null) {
-                System.out.println("ANIM PATH = " + "animations/" + animId.getPath() + ".animation.json");
                 return ResourceLocation.fromNamespaceAndPath(animId.getNamespace(),
                         "animations/" + animId.getPath() + ".animation.json");
             }
@@ -127,11 +151,20 @@ public class CosmeticHelper {
         return CosmeticSlotNames.armorSlot(CosmeticSlotNames.slotKey(stack)) != null;
     }
 
-    public static net.minecraft.network.chat.Component getName(ItemStack stack, net.minecraft.network.chat.Component fallback) {
+    public static Component getName(ItemStack stack, Component fallback) {
+        ResourceLocation id = getCosmeticId(stack);
         CosmeticDefinition def = getDefinition(stack);
-        if (def != null && def.name().isPresent()) {
-            return net.minecraft.network.chat.Component.literal(def.name().get());
-        }
-        return fallback;
+        return def != null && def.name().isPresent() ? displayName(id) : fallback;
+    }
+
+    /** Used when the JSON has no "color" */
+    public static final TextColor DEFAULT_NAME_COLOR = TextColor.fromLegacyFormat(ChatFormatting.AQUA);
+
+    /** Name, or ID if unnamed, in its colour */
+    public static MutableComponent displayName(ResourceLocation cosmeticId) {
+        CosmeticDefinition def = CosmeticDataLoader.getDefinition(cosmeticId);
+        String name = def != null ? def.name().orElse(cosmeticId.toString()) : cosmeticId.toString();
+        TextColor color = def != null ? def.color().orElse(DEFAULT_NAME_COLOR) : DEFAULT_NAME_COLOR;
+        return Component.literal(name).withStyle(style -> style.withColor(color));
     }
 }

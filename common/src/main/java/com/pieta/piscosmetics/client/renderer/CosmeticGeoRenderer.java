@@ -71,6 +71,18 @@ public class CosmeticGeoRenderer extends GeoItemRenderer<CosmeticItem> {
         return holder[0];
     }
 
+    /**
+     * Stacks without a GeckoLib ID share one animation state, so cosmetics on the same item would play each
+     * other's animations. Gives each cosmetic its own, negative so it can't clash with real IDs
+     */
+    @Override
+    public long getInstanceId(CosmeticItem animatable) {
+        long id = super.getInstanceId(animatable);
+        if (id != Long.MAX_VALUE) return id;
+        ResourceLocation cosmeticId = CosmeticHelper.getCosmeticId(getCurrentItemStack());
+        return cosmeticId == null ? id : -1L - (cosmeticId.toString().hashCode() & 0xFFFFFFFFL);
+    }
+
     @Override
     public ResourceLocation getTextureLocation(CosmeticItem animatable) {
         return getGeoModel().getTextureResource(animatable);

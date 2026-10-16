@@ -12,13 +12,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Accessories picks the renderer for every worn stack in getRenderer(ItemStack), with no event to change it.
- * If a worn stack from another mod resolves to a cosmetic (render_for, or its own "cosmetic" data), draw that
- * cosmetic instead. Every other stack keeps the renderer it had.
- * <p>
- * Pseudo: skipped when Accessories isn't installed. Desc instead of a descriptor string: its class references
- * get remapped on Fabric like normal code, which a string pointing into another mod might not.
- * require = 0: if Accessories changes this method, the game still starts (stand-ins just aren't drawn).
+ * Other mods' worn items that resolve to a cosmetic get StandInRenderer.
+ * Pseudo: skipped without Accessories. Desc: remapped on Fabric. require = 0: no crash if Accessories changes
  */
 @Pseudo
 @Mixin(targets = "io.wispforest.accessories.api.client.AccessoriesRendererRegistry", remap = false)

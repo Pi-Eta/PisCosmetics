@@ -1,0 +1,16 @@
+{
+  "values": [
+    {
+      "id": "genesisforms:dynamax_band",
+      "required": false
+    },
+    {
+      "id": "#mega_showdown:dynamax_band",
+      "required": false
+    },
+    {
+      "id": "#mega_showdown:omni_ring",
+      "required": false
+    }
+  ]
+}

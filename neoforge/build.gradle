@@ -31,7 +31,7 @@ dependencies {
     modCompileOnly "io.wispforest:accessories-neoforge:${rootProject.accessories_version}"
     modImplementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:${rootProject.geckolib_version}"
 
-    // Test only, picked by test_profile in gradle.properties
+    // Test only, picked by test_profile. genesis here means no Mega Showdown
     def profile = rootProject.test_profile
     if (profile != 'vanilla') {
         modLocalRuntime "io.wispforest:accessories-neoforge:${rootProject.accessories_version}"

@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -26,12 +27,19 @@ public record CosmeticDefinition(
         List<ParticleEmitter> particleEmitters,
         List<String> hideArmor,
         Optional<ResourceLocation> icon,
-        List<ResourceLocation> renderFor
+        List<ResourceLocation> renderFor,
+        List<String> keyItems,
+        boolean copyable,
+        Optional<TextColor> color
 ) {
-    /**
-     * The first 16 fields. Mojang's codec builder takes at most 16 fields at once, so the rest
-     * (render_for) are added on top of this in {@link #CODEC}.
-     */
+    // One string or a list
+    private static Codec<List<String>> stringOrList(Codec<String> element) {
+        return Codec.either(element, element.listOf())
+                .xmap(either -> either.map(List::of, list -> list),
+                        list -> list.size() == 1 ? Either.left(list.get(0)) : Either.right(list));
+    }
+
+    /** First 16 fields, the codec builder's limit. The rest are added in {@link #CODEC} */
     private static final MapCodec<CosmeticDefinition> BASE_CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
                     Codec.STRING.fieldOf("slot").forGetter(CosmeticDefinition::slot),
@@ -48,28 +56,39 @@ public record CosmeticDefinition(
                     Codec.FLOAT.optionalFieldOf("rotate_z").forGetter(CosmeticDefinition::rotateZ),
                     Codec.FLOAT.optionalFieldOf("scale").forGetter(CosmeticDefinition::scale),
                     Codec.list(ParticleEmitter.CODEC).optionalFieldOf("particle_emitters", List.of()).forGetter(CosmeticDefinition::particleEmitters),
-                    Codec.either(Codec.STRING, Codec.STRING.listOf())
-                            .xmap(either -> either.map(List::of, list -> list),
-                                    list -> list.size() == 1 ? Either.left(list.get(0)) : Either.right(list))
-                            .optionalFieldOf("hide_armor", List.of())
+                    stringOrList(Codec.STRING).optionalFieldOf("hide_armor", List.of())
                             .forGetter(CosmeticDefinition::hideArmor),
                     ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(CosmeticDefinition::icon)
             ).apply(instance, (slot, model, texture, animation, name, attach, tx, ty, tz, rx, ry, rz, scale,
                                emitters, hideArmor, icon) -> new CosmeticDefinition(slot, model, texture, animation,
-                    name, attach, tx, ty, tz, rx, ry, rz, scale, emitters, hideArmor, icon, List.of()))
+                    name, attach, tx, ty, tz, rx, ry, rz, scale, emitters, hideArmor, icon, List.of(), List.of(), true, Optional.empty()))
     );
 
     public static final Codec<CosmeticDefinition> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     BASE_CODEC.forGetter(def -> def),
-                    // Items this cosmetic is the default look for when worn, e.g. "genesisforms:key_stone"
-                    ResourceLocation.CODEC.listOf().optionalFieldOf("render_for", List.of()).forGetter(CosmeticDefinition::renderFor)
-            ).apply(instance, (base, renderFor) -> base.withRenderFor(renderFor))
+                    // Items this is the default worn look for
+                    ResourceLocation.CODEC.listOf().optionalFieldOf("render_for", List.of()).forGetter(CosmeticDefinition::renderFor),
+                    // Key item types the blueprint goes on (KeyItemTypes). Typos are rejected in CosmeticDataLoader
+                    stringOrList(Codec.STRING)
+                            .optionalFieldOf("key_items", List.of()).forGetter(CosmeticDefinition::keyItems),
+                    // false: blueprints can't be copied
+                    Codec.BOOL.optionalFieldOf("copyable", true).forGetter(CosmeticDefinition::copyable),
+                    // Name colour, e.g. "gold" or "#FF8800"
+                    TextColor.CODEC.optionalFieldOf("color").forGetter(CosmeticDefinition::color)
+            ).apply(instance, (base, renderFor, keyItems, copyable, color) -> base.withExtras(renderFor, keyItems, copyable, color))
     );
 
-    public CosmeticDefinition withRenderFor(List<ResourceLocation> renderFor) {
+    public CosmeticDefinition withExtras(List<ResourceLocation> renderFor, List<String> keyItems, boolean copyable,
+                                         Optional<TextColor> color) {
         return new CosmeticDefinition(slot, model, texture, animation, name, attach, translateX, translateY, translateZ,
-                rotateX, rotateY, rotateZ, scale, particleEmitters, hideArmor, icon, List.copyOf(renderFor));
+                rotateX, rotateY, rotateZ, scale, particleEmitters, hideArmor, icon, List.copyOf(renderFor),
+                List.copyOf(keyItems), copyable, color);
+    }
+
+    /** True if the blueprint goes on key items instead of making a wearable cosmetic */
+    public boolean isKeyItemLook() {
+        return !keyItems.isEmpty();
     }
 
     public String getAttachPoint() {

@@ -17,10 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Set;
 
 /**
- * Client only. A player's client sees a Polymer-disguised item (a Genesis Forms Key Stone) as the vanilla item
- * it's disguised as, which no slot tag lists, so the Accessories screen would refuse it. For disguised Genesis
- * Forms key items, the client answers from GenesisKeyItems instead, the same slots the server's tags allow.
- * Every other stack is left alone. require = 0: if Accessories changes this method, the game still starts.
+ * Client only. Disguised Genesis Forms key items aren't in any slot tag, so slots come from GenesisKeyItems.
+ * require = 0 so an Accessories change doesn't crash the game
  */
 @Pseudo
 @Mixin(targets = "io.wispforest.accessories.api.AccessoriesAPI", remap = false)

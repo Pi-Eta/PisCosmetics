@@ -1,0 +1,20 @@
+{
+  "values": [
+    {
+      "id": "genesisforms:z_ring",
+      "required": false
+    },
+    {
+      "id": "genesisforms:z_power_ring",
+      "required": false
+    },
+    {
+      "id": "#mega_showdown:z_ring",
+      "required": false
+    },
+    {
+      "id": "#mega_showdown:omni_ring",
+      "required": false
+    }
+  ]
+}

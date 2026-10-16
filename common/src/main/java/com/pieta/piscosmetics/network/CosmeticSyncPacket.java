@@ -5,8 +5,10 @@ import java.util.*;
 import com.pieta.piscosmetics.PisCosmetics;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
 import com.pieta.piscosmetics.api.ParticleEmitter;
+import com.pieta.piscosmetics.client.PisCosmeticsClient;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -91,6 +93,13 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
             for (ResourceLocation item : def.renderFor()) {
                 buf.writeResourceLocation(item);
             }
+
+            buf.writeInt(def.keyItems().size());
+            for (String type : def.keyItems()) {
+                buf.writeUtf(type);
+            }
+            buf.writeBoolean(def.copyable());
+            buf.writeUtf(def.color().map(TextColor::serialize).orElse(""));
         }
     }
 
@@ -143,7 +152,7 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
             Optional<Float> scaleOpt = scale == 1f ? Optional.empty() : Optional.of(scale);
 
             int emitterCount = buf.readInt();
-            List<ParticleEmitter> emitters = new ArrayList<>();
+            java.util.List<ParticleEmitter> emitters = new java.util.ArrayList<>();
             for (int j = 0; j < emitterCount; j++) {
                 String trigger = buf.readUtf();
                 ResourceLocation particleId = buf.readResourceLocation();
@@ -180,6 +189,15 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
                 renderFor.add(buf.readResourceLocation());
             }
 
+            int keyItemCount = buf.readInt();
+            List<String> keyItems = new ArrayList<>();
+            for (int k = 0; k < keyItemCount; k++) {
+                keyItems.add(buf.readUtf());
+            }
+            boolean copyable = buf.readBoolean();
+            String colorName = buf.readUtf();
+            Optional<TextColor> color = colorName.isEmpty() ? Optional.empty() : TextColor.parseColor(colorName).result();
+
             defs.put(id, new CosmeticDefinition(
                     slot,
                     model,
@@ -197,7 +215,10 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
                     emitters,
                     hideArmor,
                     icon,
-                    renderFor
+                    renderFor,
+                    keyItems,
+                    copyable,
+                    color
             ));
         }
         return new CosmeticSyncPacket(defs);
@@ -206,5 +227,6 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
     /** Must run on the game thread to work with both loaders */
     public static void handle(CosmeticSyncPacket packet) {
         CosmeticDataLoader.setDefinitions(packet.definitions());
+        PisCosmeticsClient.onDefinitionsChanged();
     }
 }

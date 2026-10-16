@@ -1,0 +1,32 @@
+{
+  "values": [
+    {
+      "id": "genesisforms:key_stone",
+      "required": false
+    },
+    {
+      "id": "genesisforms:mega_bracelet",
+      "required": false
+    },
+    {
+      "id": "genesisforms:mega_ring",
+      "required": false
+    },
+    {
+      "id": "genesisforms:mega_cuff",
+      "required": false
+    },
+    {
+      "id": "genesisforms:mega_charm",
+      "required": false
+    },
+    {
+      "id": "#mega_showdown:mega_bracelet",
+      "required": false
+    },
+    {
+      "id": "#mega_showdown:omni_ring",
+      "required": false
+    }
+  ]
+}

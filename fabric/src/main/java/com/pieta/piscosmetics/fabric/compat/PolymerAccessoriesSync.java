@@ -23,21 +23,17 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Accessories sends everything an entity wears as one NBT tag (on join, and when someone comes into view).
- * The tag is built before the packet goes out, so Polymer never disguises the server-only items in it
- * (Genesis Forms key items), and clients without those mods drop them as unknown items.
- * <p>
- * This sends one copy per player instead, with each stack swapped for what Polymer would show that player.
- * Only called when Polymer is installed (see AccessoriesNetworkingMixin).
+ * Accessories' full sync is NBT built before sending, so Polymer never disguises it and clients drop
+ * server-only items. Sends a disguised copy per player instead. Only called with Polymer installed
  */
 public final class PolymerAccessoriesSync {
 
-    // Set while we send our own copies, so the mixin lets them through
+    // Lets our own copies through the mixin
     private static boolean sending = false;
 
     private PolymerAccessoriesSync() {}
 
-    /** Returns false when the original packet should be sent as normal */
+    /** False if the original should be sent */
     public static boolean sendToPlayer(ServerPlayer target, SyncEntireContainer packet) {
         if (sending) return false;
         send(List.of(target), packet);
@@ -65,7 +61,7 @@ public final class PolymerAccessoriesSync {
         }
     }
 
-    /** Walks the whole tag, so it doesn't depend on how Accessories lays it out */
+    /** Walks the whole tag, independent of Accessories' layout */
     private static void disguise(Tag tag, ServerPlayer player) {
         if (tag instanceof CompoundTag compound) {
             for (String key : new ArrayList<>(compound.getAllKeys())) {
@@ -104,7 +100,7 @@ public final class PolymerAccessoriesSync {
         ItemStack shown = PolymerItemUtils.getPolymerItemStack(real, registries, player);
         if (shown == real || shown.isEmpty()) return tag;
 
-        // Keep whatever Accessories stored next to the stack (the slot number)
+        // Keeps the slot number
         CompoundTag extra = tag.copy();
         extra.remove("id");
         extra.remove("count");

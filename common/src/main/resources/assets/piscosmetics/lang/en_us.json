@@ -20,5 +20,22 @@
   "item.piscosmetics.cosmetic_legs": "Cosmetic Legs",
   "item.piscosmetics.cosmetic_feet": "Cosmetic Feet",
   "item.piscosmetics.cosmetic": "Cosmetic",
-  "tooltip.piscosmetics.needs_accessories": "Needs the Accessories mod to wear"
+  "tooltip.piscosmetics.needs_accessories": "Needs the Accessories mod to wear",
+  "item.piscosmetics.cosmetic_blueprint": "Cosmetic Blueprint",
+  "item.piscosmetics.cosmetic_blueprint.named": "Blueprint: %s",
+  "tooltip.piscosmetics.blueprint.empty": "No cosmetic set",
+  "itemGroup.piscosmetics": "Pi's Cosmetics",
+  "tooltip.piscosmetics.blueprint.key_items": "Smithing table + a %s key item",
+  "tooltip.piscosmetics.blueprint.wearable": "Smithing table + %s",
+  "tooltip.piscosmetics.blueprint.base_unset": "(no blueprint base set)",
+  "tooltip.piscosmetics.blueprint.comma": ", ",
+  "tooltip.piscosmetics.blueprint.or": " or ",
+  "key_item.piscosmetics.mega": "Mega",
+  "key_item.piscosmetics.z_move": "Z-Move",
+  "key_item.piscosmetics.dynamax": "Dynamax",
+  "key_item.piscosmetics.tera": "Tera",
+  "tooltip.piscosmetics.blueprint.uncopyable": "Can't be copied",
+  "item.piscosmetics.cosmetic_blueprint.blank": "Blank Blueprint",
+  "tooltip.piscosmetics.blueprint.blank": "Smithing table + a blueprint to copy it",
+  "tooltip.piscosmetics.look": "Look: %s"
 }

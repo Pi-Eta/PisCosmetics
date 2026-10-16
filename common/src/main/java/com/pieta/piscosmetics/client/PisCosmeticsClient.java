@@ -1,5 +1,8 @@
 package com.pieta.piscosmetics.client;
 
+import com.pieta.piscosmetics.ModCreativeTab;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.CreativeModeTab;
 import com.pieta.piscosmetics.compat.accessories.AccessoriesCompat;
 import com.pieta.piscosmetics.platform.Services;
 
@@ -22,5 +25,15 @@ public final class PisCosmeticsClient {
      */
     public static void clientSetup() {
         if (Services.PLATFORM.isModLoaded("accessories")) AccessoriesCompat.initClient();
+    }
+
+    /** New definitions from the server; Minecraft won't refill the creative tab by itself */
+    public static void onDefinitionsChanged() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || minecraft.level == null || ModCreativeTab.TAB == null) return;
+        ModCreativeTab.TAB.buildContents(new CreativeModeTab.ItemDisplayParameters(
+                minecraft.player.connection.enabledFeatures(),
+                minecraft.player.canUseGameMasterBlocks() && minecraft.options.operatorItemsTab().get(),
+                minecraft.level.registryAccess()));
     }
 }
