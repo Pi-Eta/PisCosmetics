@@ -86,6 +86,11 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
 
             buf.writeBoolean(def.icon().isPresent());
             def.icon().ifPresent(buf::writeResourceLocation);
+
+            buf.writeInt(def.renderFor().size());
+            for (ResourceLocation item : def.renderFor()) {
+                buf.writeResourceLocation(item);
+            }
         }
     }
 
@@ -138,7 +143,7 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
             Optional<Float> scaleOpt = scale == 1f ? Optional.empty() : Optional.of(scale);
 
             int emitterCount = buf.readInt();
-            java.util.List<ParticleEmitter> emitters = new java.util.ArrayList<>();
+            List<ParticleEmitter> emitters = new ArrayList<>();
             for (int j = 0; j < emitterCount; j++) {
                 String trigger = buf.readUtf();
                 ResourceLocation particleId = buf.readResourceLocation();
@@ -169,6 +174,12 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
                     ? Optional.of(buf.readResourceLocation())
                     : Optional.empty();
 
+            int renderForCount = buf.readInt();
+            List<ResourceLocation> renderFor = new ArrayList<>();
+            for (int r = 0; r < renderForCount; r++) {
+                renderFor.add(buf.readResourceLocation());
+            }
+
             defs.put(id, new CosmeticDefinition(
                     slot,
                     model,
@@ -185,7 +196,8 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
                     scaleOpt,
                     emitters,
                     hideArmor,
-                    icon
+                    icon,
+                    renderFor
             ));
         }
         return new CosmeticSyncPacket(defs);
@@ -193,7 +205,6 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
 
     /** Must run on the game thread to work with both loaders */
     public static void handle(CosmeticSyncPacket packet) {
-        CosmeticDataLoader.DEFINITIONS.clear();
-        CosmeticDataLoader.DEFINITIONS.putAll(packet.definitions());
+        CosmeticDataLoader.setDefinitions(packet.definitions());
     }
 }

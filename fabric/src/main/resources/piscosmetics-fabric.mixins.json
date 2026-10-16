@@ -3,6 +3,9 @@
     "minVersion": "0.8",
     "package": "com.pieta.piscosmetics.fabric.mixin",
     "compatibilityLevel": "JAVA_21",
+    "mixins": [
+        "compat.AccessoriesNetworkingMixin"
+    ],
     "client": [
         "FabricHumanoidArmorLayerMixin",
         "FabricParticleEngineMixin"

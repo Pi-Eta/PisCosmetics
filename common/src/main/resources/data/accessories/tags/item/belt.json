@@ -1,6 +1,11 @@
 {
+  "replace": false,
   "values": [
     "piscosmetics:cosmetic_belt",
-    "piscosmetics:cosmetic"
+    "piscosmetics:cosmetic",
+    {
+      "id": "genesisforms:tera_orb",
+      "required": false
+    }
   ]
 }

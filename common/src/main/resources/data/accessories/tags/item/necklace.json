@@ -1,6 +1,11 @@
 {
+  "replace": false,
   "values": [
     "piscosmetics:cosmetic_necklace",
-    "piscosmetics:cosmetic"
+    "piscosmetics:cosmetic",
+    {
+      "id": "genesisforms:mega_charm",
+      "required": false
+    }
   ]
 }

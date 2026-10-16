@@ -14,12 +14,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.core.component.DataComponents;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().create();
     public static final Map<ResourceLocation, CosmeticDefinition> DEFINITIONS = new HashMap<>();
+    /** Item ID -> the cosmetic whose render_for names it (the default look for that item when worn). */
+    private static final Map<ResourceLocation, ResourceLocation> STAND_INS = new HashMap<>();
 
     public CosmeticDataLoader() {
         super(GSON, "cosmetic");
@@ -47,6 +52,35 @@ public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
             }
         }
         System.out.println("=== Loaded " + DEFINITIONS.size() + " cosmetics ===");
+        rebuildStandIns();
+    }
+
+    /** Replaces every definition, e.g. with the ones the server sent. */
+    public static void setDefinitions(Map<ResourceLocation, CosmeticDefinition> definitions) {
+        DEFINITIONS.clear();
+        DEFINITIONS.putAll(definitions);
+        rebuildStandIns();
+    }
+
+    /** Sorted by cosmetic ID, so server and clients pick the same winner when two cosmetics name one item. */
+    private static void rebuildStandIns() {
+        STAND_INS.clear();
+        List<ResourceLocation> ids = new ArrayList<>(DEFINITIONS.keySet());
+        ids.sort(Comparator.comparing(ResourceLocation::toString));
+        for (ResourceLocation cosmeticId : ids) {
+            for (ResourceLocation item : DEFINITIONS.get(cosmeticId).renderFor()) {
+                ResourceLocation earlier = STAND_INS.putIfAbsent(item, cosmeticId);
+                if (earlier != null) {
+                    System.err.println("render_for: " + item + " is named by both " + earlier + " and " + cosmeticId
+                            + "; using " + earlier);
+                }
+            }
+        }
+    }
+
+    /** The cosmetic whose render_for names this item, or null. */
+    public static ResourceLocation getStandIn(ResourceLocation itemId) {
+        return itemId == null ? null : STAND_INS.get(itemId);
     }
 
     public static CosmeticDefinition getDefinition(ResourceLocation id) {

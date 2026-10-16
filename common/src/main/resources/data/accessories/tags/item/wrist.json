@@ -1,6 +1,19 @@
 {
+  "replace": false,
   "values": [
     "piscosmetics:cosmetic_wrist",
-    "piscosmetics:cosmetic"
+    "piscosmetics:cosmetic",
+    {
+      "id": "genesisforms:mega_bracelet",
+      "required": false
+    },
+    {
+      "id": "genesisforms:mega_cuff",
+      "required": false
+    },
+    {
+      "id": "genesisforms:dynamax_band",
+      "required": false
+    }
   ]
 }

@@ -9,7 +9,9 @@
     "client": [
         "ElytraLayerMixin",
         "ItemRendererMixin",
-        "CosmeticArmorRenderMixin"
+        "CosmeticArmorRenderMixin",
+        "compat.AccessoriesRendererRegistryMixin",
+        "compat.AccessoriesAPIMixin"
     ],
     "injectors": {
         "defaultRequire": 1

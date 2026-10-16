@@ -31,6 +31,7 @@ dependencies {
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 
     modCompileOnly "io.wispforest:accessories-fabric:${rootProject.accessories_version}"
+    modCompileOnly "eu.pb4:polymer-core:${rootProject.polymer_version}"
     modImplementation "software.bernie.geckolib:geckolib-fabric-1.21.1:${rootProject.geckolib_version}"
 
     // Test only, picked by test_profile in gradle.properties
@@ -43,6 +44,42 @@ dependencies {
     if (profile == 'megashowdown') {
         modLocalRuntime "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
         modLocalRuntime "maven.modrinth:cobblemon-mega-showdown:${rootProject.megashowdown_fabric_id}"
+    }
+    // Same mods as the Genesis Forms server. Polymer is needed by Genesis Forms but not bundled in it;
+    // Accessories Compat Layer makes Trinkets run on top of Accessories, so there's one set of slots.
+    if (profile == 'genesis') {
+        modLocalRuntime "maven.modrinth:cobblemon-genesis-forms:${rootProject.genesisforms_id}"
+        // Genesis Forms' bundled libraries, plus the Polymer modules it uses
+        modLocalRuntime "me.lucko:fabric-permissions-api:${rootProject.fabric_permissions_api_version}"
+        modLocalRuntime "net.kyori:adventure-text-minimessage:${rootProject.adventure_minimessage_version}"
+        modLocalRuntime "net.kyori:adventure-platform-fabric:${rootProject.adventure_platform_fabric_version}"
+        modLocalRuntime "eu.pb4:factorytools:${rootProject.factorytools_version}"
+        modLocalRuntime "eu.pb4:polymer-core:${rootProject.polymer_version}"
+        modLocalRuntime "eu.pb4:polymer-blocks:${rootProject.polymer_version}"
+        modLocalRuntime "eu.pb4:polymer-resource-pack:${rootProject.polymer_version}"
+        modLocalRuntime "eu.pb4:polymer-virtual-entity:${rootProject.polymer_version}"
+        modLocalRuntime "maven.modrinth:trinkets:${rootProject.trinkets_id}"
+        modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-base:${rootProject.cardinal_components_version}"
+        modLocalRuntime "org.ladysnake.cardinal-components-api:cardinal-components-entity:${rootProject.cardinal_components_version}"
+        modLocalRuntime "maven.modrinth:accessories-compat-layer:${rootProject.accessories_compat_layer_fabric_id}"
+        modLocalRuntime "com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.mixinsquared_version}"
+    }
+}
+
+loom {
+    runs {
+        // Own folder for runServer, so a dev server and dev client can run side by side
+        server {
+            runDir "run/server"
+            // owo-lib adds debug-only registry entries in dev, which a normal client rejects on join
+            vmArg "-Dowo.debug=false"
+        }
+    }
+}
+
+if (rootProject.test_profile != 'vanilla') {
+    tasks.named('runServer') {
+        classpath(configurations.detachedConfiguration(dependencies.create('com.ibm.icu:icu4j:71.1')))
     }
 }
 

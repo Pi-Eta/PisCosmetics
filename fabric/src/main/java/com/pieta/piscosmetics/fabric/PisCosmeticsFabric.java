@@ -5,6 +5,7 @@ import com.pieta.piscosmetics.ModParticles;
 import com.pieta.piscosmetics.PisCosmetics;
 import com.pieta.piscosmetics.server.CosmeticParticleServerHandler;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -24,7 +25,11 @@ public final class PisCosmeticsFabric implements ModInitializer {
         ModParticles.register((id, type) -> Registry.register(BuiltInRegistries.PARTICLE_TYPE, id, type));
         FabricNetworking.registerCommon();
 
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> PisCosmetics.onPlayerJoin(handler.player));
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> PisCosmetics.sendDefinitions(handler.player));
+        // After /reload (joined is false), so players see added or removed cosmetics without relogging
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> {
+            if (!joined) PisCosmetics.sendDefinitions(player);
+        });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {

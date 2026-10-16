@@ -1,6 +1,23 @@
 {
+  "replace": false,
   "values": [
     "piscosmetics:cosmetic_ring",
-    "piscosmetics:cosmetic"
+    "piscosmetics:cosmetic",
+    {
+      "id": "genesisforms:mega_ring",
+      "required": false
+    },
+    {
+      "id": "genesisforms:z_ring",
+      "required": false
+    },
+    {
+      "id": "genesisforms:z_power_ring",
+      "required": false
+    },
+    {
+      "id": "genesisforms:key_stone",
+      "required": false
+    }
   ]
 }

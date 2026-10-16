@@ -12,7 +12,7 @@ architectury {
 }
 
 // Catch typos in test_profile instead of quietly loading the wrong test mods
-def testProfiles = ['vanilla', 'megashowdown']
+def testProfiles = ['vanilla', 'megashowdown', 'genesis']
 if (!testProfiles.contains(project.test_profile)) {
     throw new GradleException("test_profile must be one of ${testProfiles}, not '${project.test_profile}'")
 }
@@ -41,6 +41,9 @@ subprojects {
         maven { url "https://thedarkcolour.github.io/KotlinForForge/" }           // Kotlin for Forge (test only)
         maven { url "https://maven.architectury.dev/" }                           // Architectury API (test only, Mega Showdown needs it)
         maven { url "https://maven.nucleoid.xyz" }                                // Polymer (test only, step 6.5)
+        maven { url "https://maven.ladysnake.org/releases" }                       // Cardinal Components (test only, Trinkets needs it)
+        maven { url "https://maven.bawnorton.com/releases" }                       // MixinSquared (test only, Accessories Compat Layer needs it)
+        mavenCentral()                                                             // Adventure, permissions API (test only, Genesis Forms needs them)
         exclusiveContent {                                                         // Modrinth, only for mods without their own Maven
             forRepository { maven { url "https://api.modrinth.com/maven" } }
             filter { includeGroup "maven.modrinth" }

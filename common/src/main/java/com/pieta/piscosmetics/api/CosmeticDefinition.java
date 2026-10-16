@@ -2,6 +2,7 @@ package com.pieta.piscosmetics.api;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 
@@ -24,9 +25,14 @@ public record CosmeticDefinition(
         Optional<Float> scale,
         List<ParticleEmitter> particleEmitters,
         List<String> hideArmor,
-        Optional<ResourceLocation> icon
+        Optional<ResourceLocation> icon,
+        List<ResourceLocation> renderFor
 ) {
-    public static final Codec<CosmeticDefinition> CODEC = RecordCodecBuilder.create(instance ->
+    /**
+     * The first 16 fields. Mojang's codec builder takes at most 16 fields at once, so the rest
+     * (render_for) are added on top of this in {@link #CODEC}.
+     */
+    private static final MapCodec<CosmeticDefinition> BASE_CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
                     Codec.STRING.fieldOf("slot").forGetter(CosmeticDefinition::slot),
                     ResourceLocation.CODEC.optionalFieldOf("model").forGetter(CosmeticDefinition::model),
@@ -48,8 +54,23 @@ public record CosmeticDefinition(
                             .optionalFieldOf("hide_armor", List.of())
                             .forGetter(CosmeticDefinition::hideArmor),
                     ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(CosmeticDefinition::icon)
-            ).apply(instance, CosmeticDefinition::new)
+            ).apply(instance, (slot, model, texture, animation, name, attach, tx, ty, tz, rx, ry, rz, scale,
+                               emitters, hideArmor, icon) -> new CosmeticDefinition(slot, model, texture, animation,
+                    name, attach, tx, ty, tz, rx, ry, rz, scale, emitters, hideArmor, icon, List.of()))
     );
+
+    public static final Codec<CosmeticDefinition> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    BASE_CODEC.forGetter(def -> def),
+                    // Items this cosmetic is the default look for when worn, e.g. "genesisforms:key_stone"
+                    ResourceLocation.CODEC.listOf().optionalFieldOf("render_for", List.of()).forGetter(CosmeticDefinition::renderFor)
+            ).apply(instance, (base, renderFor) -> base.withRenderFor(renderFor))
+    );
+
+    public CosmeticDefinition withRenderFor(List<ResourceLocation> renderFor) {
+        return new CosmeticDefinition(slot, model, texture, animation, name, attach, translateX, translateY, translateZ,
+                rotateX, rotateY, rotateZ, scale, particleEmitters, hideArmor, icon, List.copyOf(renderFor));
+    }
 
     public String getAttachPoint() {
         return attach.orElse("body");
