@@ -1,6 +1,7 @@
 package com.pieta.piscosmetics.client.renderer;
 
 import com.mojang.logging.LogUtils;
+import com.pieta.piscosmetics.client.CosmeticWearer;
 import com.pieta.piscosmetics.client.MovementState;
 import net.minecraft.world.entity.LivingEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -111,12 +112,17 @@ public final class CosmeticRenderer {
         PoseStack local = new PoseStack();
         local.last().pose().set(poseStack.last().pose());
         local.last().normal().set(poseStack.last().normal());
+        // Animations and GeckoLib instance IDs follow this wearer
+        LivingEntity previousWearer = CosmeticWearer.get();
+        CosmeticWearer.set(entity);
         try {
             renderOn(stack, entity, local, humanoidModel, bufferSource, packedLight);
         } catch (RuntimeException e) {
             ResourceLocation cosmeticId = CosmeticHelper.getCosmeticId(stack);
             String id = cosmeticId != null ? cosmeticId.toString() : stack.getItem().toString();
             if (FAILED.add(id)) LOGGER.error("Couldn't draw cosmetic {}", id, e);
+        } finally {
+            CosmeticWearer.set(previousWearer);
         }
     }
 
@@ -131,7 +137,7 @@ public final class CosmeticRenderer {
         String slotKey = CosmeticSlotNames.slotKey(stack);
         SlotDefaults defaults = getDefaults(slotKey);
         CosmeticDefinition def = getCosmeticDefinition(stack);
-        MovementState.State state = MovementState.get(entity.getUUID());
+        MovementState.State state = MovementState.get(entity);
 
         // Gliding override
         if (state.gliding) {

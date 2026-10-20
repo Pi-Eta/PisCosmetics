@@ -15,8 +15,9 @@ public final class PisCosmeticsClient {
 
     /** Called once per tick */
     public static void onClientTick() {
-        MovementCalculator.tick();
-        MovementInertia.tick();
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null) MovementState.clear();
+        else MovementState.prune(minecraft.level.getGameTime());
         CosmeticParticleHandler.tick();
     }
 

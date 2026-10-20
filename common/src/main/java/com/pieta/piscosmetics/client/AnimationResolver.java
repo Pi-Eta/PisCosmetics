@@ -1,6 +1,6 @@
 package com.pieta.piscosmetics.client;
 
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 
 public class AnimationResolver {
 
@@ -9,10 +9,10 @@ public class AnimationResolver {
             String overlayAnimation
     ) {}
 
-    public static Result resolve(MovementState.State state, Player player) {
+    public static Result resolve(MovementState.State state, LivingEntity entity) {
 
         // GLIDE
-        if (state.gliding || player.isFallFlying()) {
+        if (state.gliding) {
             return new Result("glide", "");
         }
 
@@ -33,8 +33,9 @@ public class AnimationResolver {
         // AIR OVERLAY
         String overlay = "";
 
-        if (!state.grounded && !state.gliding) {
-            overlay = player.getDeltaMovement().y > 0 ? "jump" : "fall";
+        if (!state.grounded) {
+            // Position change, since other players' velocity isn't known client side
+            overlay = entity.getY() - entity.yo > 0 ? "jump" : "fall";
         }
 
         return new Result(base, overlay);

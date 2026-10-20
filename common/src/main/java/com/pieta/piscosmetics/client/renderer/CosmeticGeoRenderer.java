@@ -1,6 +1,9 @@
 package com.pieta.piscosmetics.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.pieta.piscosmetics.client.CosmeticWearer;
+import net.minecraft.world.entity.LivingEntity;
+import java.util.UUID;
 import com.pieta.piscosmetics.client.renderer.layer.CosmeticEmissiveLayer;
 import com.pieta.piscosmetics.item.CosmeticItem;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -75,15 +78,22 @@ public class CosmeticGeoRenderer extends GeoItemRenderer<CosmeticItem> {
     }
 
     /**
-     * Stacks without a GeckoLib ID share one animation state, so cosmetics on the same item would play each
-     * other's animations. Gives each cosmetic its own, negative so it can't clash with real IDs
+     * Animation state per cosmetic per wearer. Stacks without a GeckoLib ID would otherwise share one, and
+     * copies of a stack share their ID. Negative so it can't clash with real IDs
      */
     @Override
     public long getInstanceId(CosmeticItem animatable) {
         long id = super.getInstanceId(animatable);
-        if (id != Long.MAX_VALUE) return id;
         ResourceLocation cosmeticId = CosmeticHelper.getCosmeticId(getCurrentItemStack());
-        return cosmeticId == null ? id : -1L - (cosmeticId.toString().hashCode() & 0xFFFFFFFFL);
+        LivingEntity wearer = CosmeticWearer.get();
+        if (wearer == null) {
+            if (id != Long.MAX_VALUE || cosmeticId == null) return id;
+            return -1L - (cosmeticId.toString().hashCode() & 0xFFFFFFFFL);
+        }
+        long base = id != Long.MAX_VALUE ? id : (cosmeticId == null ? 0L : cosmeticId.toString().hashCode());
+        UUID uuid = wearer.getUUID();
+        long mixed = 31L * (31L * base + uuid.getMostSignificantBits()) + uuid.getLeastSignificantBits();
+        return -1L - (mixed & Long.MAX_VALUE);
     }
 
     @Override

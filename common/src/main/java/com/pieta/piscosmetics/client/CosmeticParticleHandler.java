@@ -37,13 +37,20 @@ public class CosmeticParticleHandler {
         }
     }
 
+    // Blocks per tick that count as walking
+    private static final double WALK_THRESHOLD = 0.0167;
+
+    // Movement from position change: walkDist and velocity aren't kept up to date for other players
     private static boolean matchesTrigger(Player player, String trigger) {
+        double dx = player.getX() - player.xo;
+        double dz = player.getZ() - player.zo;
+        double dy = player.getY() - player.yo;
         return switch (trigger) {
             case "always", "idle" -> true;
-            case "walking" -> player.walkDist - player.walkDistO > 0.01f;
+            case "walking" -> !player.isPassenger() && dx * dx + dz * dz > WALK_THRESHOLD * WALK_THRESHOLD;
             case "sprinting" -> player.isSprinting();
-            case "jumping" -> !player.onGround() && player.getDeltaMovement().y > 0;
-            case "falling" -> !player.onGround() && player.getDeltaMovement().y < -0.1;
+            case "jumping" -> !player.onGround() && dy > 0;
+            case "falling" -> !player.onGround() && dy < -0.1;
             case "gliding" -> player.isFallFlying();
             case "sneaking" -> player.isCrouching();
             case "swimming" -> player.isSwimming();
