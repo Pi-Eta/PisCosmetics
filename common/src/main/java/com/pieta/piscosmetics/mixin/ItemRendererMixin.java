@@ -102,15 +102,16 @@ public class ItemRendererMixin {
         float uvMin = 0.01f;   // Slight inset to avoid edge pixels
         float uvMax = 0.99f;   // Slight inset to avoid edge pixels
 
-        vertexConsumer.addVertex(pose, 0, 0, 0).setUv(uvMin, uvMin).setLight(light).setColor(255, 255, 255, 255);
-        vertexConsumer.addVertex(pose, 1, 0, 0).setUv(uvMax, uvMin).setLight(light).setColor(255, 255, 255, 255);
-        vertexConsumer.addVertex(pose, 1, 1, 0).setUv(uvMax, uvMax).setLight(light).setColor(255, 255, 255, 255);
-        vertexConsumer.addVertex(pose, 0, 1, 0).setUv(uvMin, uvMax).setLight(light).setColor(255, 255, 255, 255);
+        // Model space has y up and textures have v down, so the bottom edge (y 0) takes the texture's bottom (v max)
+        vertexConsumer.addVertex(pose, 0, 0, 0).setUv(uvMin, uvMax).setLight(light).setColor(255, 255, 255, 255);
+        vertexConsumer.addVertex(pose, 1, 0, 0).setUv(uvMax, uvMax).setLight(light).setColor(255, 255, 255, 255);
+        vertexConsumer.addVertex(pose, 1, 1, 0).setUv(uvMax, uvMin).setLight(light).setColor(255, 255, 255, 255);
+        vertexConsumer.addVertex(pose, 0, 1, 0).setUv(uvMin, uvMin).setLight(light).setColor(255, 255, 255, 255);
 
-        vertexConsumer.addVertex(pose, 0, 1, 0).setUv(uvMin, uvMax).setLight(light).setColor(255, 255, 255, 255);
-        vertexConsumer.addVertex(pose, 1, 1, 0).setUv(uvMax, uvMax).setLight(light).setColor(255, 255, 255, 255);
-        vertexConsumer.addVertex(pose, 1, 0, 0).setUv(uvMax, uvMin).setLight(light).setColor(255, 255, 255, 255);
-        vertexConsumer.addVertex(pose, 0, 0, 0).setUv(uvMin, uvMin).setLight(light).setColor(255, 255, 255, 255);
+        vertexConsumer.addVertex(pose, 0, 1, 0).setUv(uvMin, uvMin).setLight(light).setColor(255, 255, 255, 255);
+        vertexConsumer.addVertex(pose, 1, 1, 0).setUv(uvMax, uvMin).setLight(light).setColor(255, 255, 255, 255);
+        vertexConsumer.addVertex(pose, 1, 0, 0).setUv(uvMax, uvMax).setLight(light).setColor(255, 255, 255, 255);
+        vertexConsumer.addVertex(pose, 0, 0, 0).setUv(uvMin, uvMax).setLight(light).setColor(255, 255, 255, 255);
 
         RenderSystem.enableCull();
 

@@ -1,5 +1,6 @@
 package com.pieta.piscosmetics.client.renderer;
 
+import com.mojang.logging.LogUtils;
 import com.pieta.piscosmetics.client.MovementState;
 import net.minecraft.world.entity.LivingEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -7,6 +8,7 @@ import com.mojang.math.Axis;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
 import com.pieta.piscosmetics.api.CosmeticSlotNames;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
+import com.pieta.piscosmetics.item.CosmeticHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -16,6 +18,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import org.slf4j.Logger;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Draws one worn cosmetic on a humanoid model. Used for every place a cosmetic can be worn:
@@ -89,6 +95,10 @@ public final class CosmeticRenderer {
         return CosmeticDataLoader.getDefinition(id);
     }
 
+    private static final Logger LOGGER = LogUtils.getLogger();
+    // Cosmetics that already logged a render error, so the log isn't flooded every frame
+    private static final Set<String> FAILED = new HashSet<>();
+
     public static void render(
             ItemStack stack,
             LivingEntity entity,
@@ -97,7 +107,27 @@ public final class CosmeticRenderer {
             MultiBufferSource bufferSource,
             int packedLight
     ) {
+        // Drawn on a copy, so a broken cosmetic (missing model...) can't leave the caller's pose stack unbalanced
+        PoseStack local = new PoseStack();
+        local.last().pose().set(poseStack.last().pose());
+        local.last().normal().set(poseStack.last().normal());
+        try {
+            renderOn(stack, entity, local, humanoidModel, bufferSource, packedLight);
+        } catch (RuntimeException e) {
+            ResourceLocation cosmeticId = CosmeticHelper.getCosmeticId(stack);
+            String id = cosmeticId != null ? cosmeticId.toString() : stack.getItem().toString();
+            if (FAILED.add(id)) LOGGER.error("Couldn't draw cosmetic {}", id, e);
+        }
+    }
 
+    private static void renderOn(
+            ItemStack stack,
+            LivingEntity entity,
+            PoseStack poseStack,
+            HumanoidModel<?> humanoidModel,
+            MultiBufferSource bufferSource,
+            int packedLight
+    ) {
         String slotKey = CosmeticSlotNames.slotKey(stack);
         SlotDefaults defaults = getDefaults(slotKey);
         CosmeticDefinition def = getCosmeticDefinition(stack);

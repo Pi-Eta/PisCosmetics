@@ -6,14 +6,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
+/**
+ * Draws <texture>_emissive.png on top at full brightness, as strong as its alpha
+ */
 public class CosmeticEmissiveLayer extends GeoRenderLayer<CosmeticItem> {
+
+    // Whether each texture has an emissive file, rechecked every few seconds so F3+T picks up new ones
+    private static final long RECHECK_MS = 5000;
+    private static final Map<ResourceLocation, Long> CHECKED_AT = new HashMap<>();
+    private static final Map<ResourceLocation, Boolean> HAS_GLOW = new HashMap<>();
 
     public CosmeticEmissiveLayer(GeoItemRenderer<CosmeticItem> renderer) {
         super(renderer);
@@ -47,15 +55,10 @@ public class CosmeticEmissiveLayer extends GeoRenderLayer<CosmeticItem> {
                         path + "_emissive.png"
                 );
 
-        Optional<Resource> resource = Minecraft.getInstance()
-                .getResourceManager()
-                .getResource(glowTexture);
+        if (!hasGlow(glowTexture)) return;
 
-        if (resource.isEmpty()) {
-            return;
-        }
-
-        RenderType glowRenderType = RenderType.eyes(glowTexture);
+        // Full brightness, blended by alpha: transparent pixels don't glow, half-transparent ones glow half
+        RenderType glowRenderType = RenderType.entityTranslucentEmissive(glowTexture);
 
         getRenderer().reRender(
                 bakedModel,
@@ -69,5 +72,15 @@ public class CosmeticEmissiveLayer extends GeoRenderLayer<CosmeticItem> {
                 packedOverlay,
                 0xFFFFFFFF
         );
+    }
+
+    private static boolean hasGlow(ResourceLocation glowTexture) {
+        long now = System.currentTimeMillis();
+        Long checked = CHECKED_AT.get(glowTexture);
+        if (checked == null || now - checked > RECHECK_MS) {
+            HAS_GLOW.put(glowTexture, Minecraft.getInstance().getResourceManager().getResource(glowTexture).isPresent());
+            CHECKED_AT.put(glowTexture, now);
+        }
+        return HAS_GLOW.get(glowTexture);
     }
 }

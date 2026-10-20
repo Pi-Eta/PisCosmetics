@@ -1,6 +1,7 @@
 package com.pieta.piscosmetics.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.pieta.piscosmetics.client.renderer.layer.CosmeticEmissiveLayer;
 import com.pieta.piscosmetics.item.CosmeticItem;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -68,6 +69,8 @@ public class CosmeticGeoRenderer extends GeoItemRenderer<CosmeticItem> {
                 return CosmeticHelper.getAnimationResource(animatable, getDef(), defaultPath("animations/", ".animation.json"));
             }
         });
+        // Glow from <texture>_emissive.png
+        holder[0].addRenderLayer(new CosmeticEmissiveLayer(holder[0]));
         return holder[0];
     }
 

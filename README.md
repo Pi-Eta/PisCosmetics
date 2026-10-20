@@ -16,7 +16,7 @@ and an accompanying resourcepack.
 This allows users to add their own custom cosmetics that are worn in any slot provided by Accessories and
 Mega Showdown, and to give the key items of Mega Showdown and Genesis Forms their own looks.
 
-Datapack
+Datapack:
 ============
 
 New items are effectively copies of existing generic items with NBT data. To override the appearance of
@@ -49,9 +49,9 @@ The following fields are available:
     "slot": "feet",
     "name": "Dragon Boots",
     "color": "gold",
-    "model": "your_namespace:cosmetic_feet",
-    "texture": "your_namespace:cosmetic_feet",
-    "animation": "your_namespace:cosmetic_feet",
+    "model": "your_namespace:item/dragon_boots",
+    "texture": "your_namespace:item/dragon_boots",
+    "animation": "your_namespace:dragon_boots",
     "attach": "right_leg",
     "translate_x": 0.1,
     "translate_y": 0.2,
@@ -61,7 +61,7 @@ The following fields are available:
     "rotate_z": 0.0,
     "scale": 0.9,
     "hide_armor": ["feet", "elytra"],
-    "icon": "your_namespace:item/cosmetic_feet",
+    "icon": "your_namespace:icon/dragon_boots",
     "copyable": true,
     "particle_emitters": [
         {
@@ -137,8 +137,11 @@ one of the Mega Showdown slots, or a vanilla armour slot. The available slots ar
 Names are aqua by default.
 
 
-- `"model"`, `"texture"`, `"animation"`: The namespace and file name of your `.geo.json` model file, texture file, and
-animation file. See the resourcepack section of this guide for information on how to format and place these files in the resourcepack.
+- `"model"`, `"texture"`, `"animation"`: Your `.geo.json` model file, texture file, and animation file. Each is
+`your_namespace:` plus the file's path inside `geo/`, `textures/` or `animations/`, e.g. `your_namespace:item/dragon_boots`
+for `geo/item/dragon_boots.geo.json`. The folders are up to you (`item/`, `hats/`, `event/2026/`...), as long as
+the path matches where the file is. See the resourcepack section of this guide for information on how to format and place
+these files in the resourcepack.
 
 
 - `"attach"`: which player bone it attaches to and moves with in all normal Minecraft body animations. Note that paired rendered slots, which are `"shoes"`, `"legs"` and `"feet"`
@@ -167,8 +170,9 @@ slot or a list like `["chest", "legs"]`. `"elytra"` is a special value that spec
 similarly, `"chest"` does not affect the elytra.
 
 
-- `"icon"`: Overrides the in-hand and the dropped texture of the item with a `.png` file in the resourcepack. Not
-including this field results in hand and ground renderer being the model of the cosmetic itself.
+- `"icon"`: Overrides the inventory and the dropped texture of the item with a `.png` file, given as its path inside
+`textures/`. Keep icons in their own folder, like `textures/icon/`, so they don't share a name with the model's texture. Not
+including this field results in the inventory and ground renderer being the model of the cosmetic itself.
 
 
 - `"copyable"`: Set to `false` so this cosmetic's blueprints can't be copied. See the blueprints section.
@@ -204,11 +208,12 @@ in the resourcepack. Emitters have the following properties:
   - `"custom_size"`: Size of a custom particle.
   - `"lifetime"`: How long the particle lasts, in ticks.
   - `"color"`: What colour the particle is; only works with `"particle": "minecraft:entity_effect"`.
-  - `"texture"`: Path to the custom particle `.png` in the resourcepack. Only use this with `"particle": "piscosmetics:cosmetic_particle"`.
+  - `"texture"`: The custom particle `.png` in `textures/particle/`, given as `your_namespace:filename`. Only use this with `"particle": "piscosmetics:cosmetic_particle"`.
 
 
 ### Note
-When specifying resource locations, always only use `your_namespace:filename` without any folder or suffixes.
+When specifying resource locations, use `your_namespace:` followed by the file's path inside the folder that field reads
+from (`geo/`, `textures/`, `animations/`), including every subfolder (`item/` or your own), but without the file extension.
 
 # Key Items
 
@@ -279,8 +284,10 @@ Your resourcepack should be structured as follows:
         │       └── my_cool_hat.geo.json
         │
         ├── 📁 textures/
-        │   └── 📁 item/
-        │       └── my_cool_hat.png
+        │   ├── 📁 item/
+        │   │   └── my_cool_hat.png
+        │   ├── 📁 icon/
+        │   │   └── my_cool_hat.png
         │   └── 📁 particle/
         │       └── my_particle.png
         │
@@ -357,8 +364,6 @@ animated wings with trailing effects.
 
 # Acknowledgements
 Thank you to:
-
-Todredmi for challenging me to evolve this for Fabric.
 
 Noowtie for sending me down this rabbit hole in the first place.
 
