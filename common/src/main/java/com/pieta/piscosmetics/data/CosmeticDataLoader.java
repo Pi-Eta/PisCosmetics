@@ -93,6 +93,11 @@ public class CosmeticDataLoader extends SimpleJsonResourceReloadListener {
         return itemId == null ? null : STAND_INS.get(itemId);
     }
 
+    /** Items named by some render_for, for /piscosmetics_debug */
+    public static int standInCount() {
+        return STAND_INS.size();
+    }
+
     public static CosmeticDefinition getDefinition(ResourceLocation id) {
         return DEFINITIONS.get(id);
     }

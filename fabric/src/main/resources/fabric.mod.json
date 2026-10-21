@@ -13,7 +13,8 @@
   },
   "mixins": [
     "piscosmetics.mixins.json",
-    "piscosmetics-fabric.mixins.json"
+    "piscosmetics-fabric.mixins.json",
+    "piscosmetics-accessories-fix.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.16.0",

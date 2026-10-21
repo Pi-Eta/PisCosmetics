@@ -19,6 +19,9 @@ config="piscosmetics.mixins.json"
 [[mixins]]
 config="piscosmetics-neoforge.mixins.json"
 
+[[mixins]]
+config="piscosmetics-accessories-fix.mixins.json"
+
 [[dependencies.piscosmetics]]
     modId="neoforge"
     type="required"

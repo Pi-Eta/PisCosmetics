@@ -5,6 +5,7 @@ import java.util.*;
 import com.pieta.piscosmetics.PisCosmetics;
 import com.pieta.piscosmetics.api.CosmeticDefinition;
 import com.pieta.piscosmetics.api.ParticleEmitter;
+import com.pieta.piscosmetics.client.CosmeticDebug;
 import com.pieta.piscosmetics.client.PisCosmeticsClient;
 import com.pieta.piscosmetics.data.CosmeticDataLoader;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -152,7 +153,7 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
             Optional<Float> scaleOpt = scale == 1f ? Optional.empty() : Optional.of(scale);
 
             int emitterCount = buf.readInt();
-            java.util.List<ParticleEmitter> emitters = new java.util.ArrayList<>();
+            List<ParticleEmitter> emitters = new ArrayList<>();
             for (int j = 0; j < emitterCount; j++) {
                 String trigger = buf.readUtf();
                 ResourceLocation particleId = buf.readResourceLocation();
@@ -228,5 +229,6 @@ public record CosmeticSyncPacket(Map<ResourceLocation, CosmeticDefinition> defin
     public static void handle(CosmeticSyncPacket packet) {
         CosmeticDataLoader.setDefinitions(packet.definitions());
         PisCosmeticsClient.onDefinitionsChanged();
+        CosmeticDebug.event("received " + packet.definitions().size() + " cosmetic definitions");
     }
 }

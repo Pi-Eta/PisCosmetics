@@ -19,6 +19,7 @@ public final class PisCosmeticsClient {
         if (minecraft.level == null) MovementState.clear();
         else MovementState.prune(minecraft.level.getGameTime());
         CosmeticParticleHandler.tick();
+        CosmeticDebug.tick();
     }
 
     /**

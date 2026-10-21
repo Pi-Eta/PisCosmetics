@@ -1,7 +1,9 @@
 package com.pieta.piscosmetics.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.pieta.piscosmetics.client.CosmeticDebug;
 import com.pieta.piscosmetics.client.CosmeticWearer;
+import software.bernie.geckolib.cache.object.GeoBone;
 import net.minecraft.world.entity.LivingEntity;
 import java.util.UUID;
 import com.pieta.piscosmetics.client.renderer.layer.CosmeticEmissiveLayer;
@@ -119,6 +121,22 @@ public class CosmeticGeoRenderer extends GeoItemRenderer<CosmeticItem> {
         }
 
         super.renderByItem(stack, context, poseStack, buffer, light, overlay);
+
+        LivingEntity wearer = CosmeticWearer.get();
+        if (wearer != null) CosmeticDebug.bones(wearer, stack, boneIssue());
+    }
+
+    /** For /piscosmetics_debug: a bone the animation left broken or invisible, or null */
+    private String boneIssue() {
+        for (GeoBone bone : getGeoModel().getAnimationProcessor().getRegisteredBones()) {
+            // Summed so it's one check; any NaN or infinity makes the sum non-finite
+            float sum = bone.getRotX() + bone.getRotY() + bone.getRotZ() + bone.getPosX() + bone.getPosY()
+                    + bone.getPosZ() + bone.getScaleX() + bone.getScaleY() + bone.getScaleZ();
+            if (!Float.isFinite(sum)) return "bone " + bone.getName() + " not a number";
+            if (bone.getScaleX() == 0 && bone.getScaleY() == 0 && bone.getScaleZ() == 0) return "bone " + bone.getName() + " scaled to 0";
+            if (bone.isHidden()) return "bone " + bone.getName() + " hidden";
+        }
+        return null;
     }
 
     private CosmeticDefinition getCurrentDefinition(ItemStack stack) {

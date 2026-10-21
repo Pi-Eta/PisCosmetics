@@ -2,6 +2,7 @@ package com.pieta.piscosmetics.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.pieta.piscosmetics.api.CosmeticSlotNames;
+import com.pieta.piscosmetics.client.CosmeticDebug;
 import com.pieta.piscosmetics.client.renderer.CosmeticRenderer;
 import com.pieta.piscosmetics.item.CosmeticArmorItem;
 import net.minecraft.client.model.HumanoidModel;
@@ -25,6 +26,8 @@ public class CosmeticArmorRenderMixin {
                                                   LivingEntity livingEntity, float limbSwing, float limbSwingAmount,
                                                   float partialTick, float ageInTicks, float netHeadYaw, float headPitch,
                                                   CallbackInfo ci) {
+        // Every humanoid has this layer, so it tells the debug watchdog the local player is being drawn at all
+        CosmeticDebug.entityDrawn(livingEntity);
         HumanoidArmorLayer layer = (HumanoidArmorLayer)(Object)this;
         HumanoidModel<?> parentModel = (HumanoidModel<?>) layer.getParentModel();
 

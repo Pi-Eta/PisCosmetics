@@ -1,6 +1,7 @@
 package com.pieta.piscosmetics.client.renderer;
 
 import com.mojang.logging.LogUtils;
+import com.pieta.piscosmetics.client.CosmeticDebug;
 import com.pieta.piscosmetics.client.CosmeticWearer;
 import com.pieta.piscosmetics.client.MovementState;
 import net.minecraft.world.entity.LivingEntity;
@@ -144,6 +145,7 @@ public final class CosmeticRenderer {
             poseStack.pushPose();
             humanoidModel.body.translateAndRotate(poseStack);
             applyTransforms(poseStack, defaults, def);
+            CosmeticDebug.drawing(entity, stack, poseStack);
             Minecraft.getInstance().getItemRenderer().renderStatic(
                     stack, ItemDisplayContext.NONE, packedLight, OverlayTexture.NO_OVERLAY,
                     poseStack, bufferSource, entity.level(), 0);
@@ -162,6 +164,7 @@ public final class CosmeticRenderer {
             poseStack.pushPose();
             attachToBodyPart(poseStack, humanoidModel, attachPoint);
             applyTransforms(poseStack, defaults, def);
+            CosmeticDebug.drawing(entity, stack, poseStack);
             Minecraft.getInstance().getItemRenderer().renderStatic(
                     stack, ItemDisplayContext.NONE, packedLight, OverlayTexture.NO_OVERLAY,
                     poseStack, bufferSource, entity.level(), 0);
@@ -193,6 +196,7 @@ public final class CosmeticRenderer {
         attachToBodyPart(poseStack, model, leftAttach);
         poseStack.scale(-1, 1, 1); // Mirror X only
         applyTransforms(poseStack, defaults, def);
+        CosmeticDebug.drawing(entity, stack, poseStack);
         Minecraft.getInstance().getItemRenderer().renderStatic(
                 stack, ItemDisplayContext.NONE, packedLight, OverlayTexture.NO_OVERLAY,
                 poseStack, bufferSource, entity.level(), 0);
@@ -202,6 +206,7 @@ public final class CosmeticRenderer {
         poseStack.pushPose();
         attachToBodyPart(poseStack, model, rightAttach);
         applyTransforms(poseStack, defaults, def);
+        CosmeticDebug.drawing(entity, stack, poseStack);
         Minecraft.getInstance().getItemRenderer().renderStatic(
                 stack, ItemDisplayContext.NONE, packedLight, OverlayTexture.NO_OVERLAY,
                 poseStack, bufferSource, entity.level(), 0);
